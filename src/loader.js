@@ -7,6 +7,11 @@ class Loader {
 		g.load.image("puck", "assets/puck.png");
 		g.load.image("submit-btn", "assets/submit-btn.png");
 		g.load.image("ui", "assets/ui.png");
+		g.load.image("fightanim1", "assets/fightanim.png");
+		g.load.image("fightanim2", "assets/fightanim2.png");
+		g.load.image("yellowring", "assets/yellowring.png");
+		g.load.image("redshootring", "assets/redshootring.png");
+		g.load.image("blueshootring", "assets/blueshootring.png");
 	}
 }
 

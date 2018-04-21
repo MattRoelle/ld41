@@ -18,6 +18,7 @@ class Game {
 
 		this.input = new Input();
 		this.utils = new Utils();
+		this.effects = new Effects();
 		this.audio = new GameAudio();
 
 		this.phaser = new Phaser.Game(800, 600, Phaser.AUTO, "game-host", this.setup, false, false);
@@ -128,6 +129,7 @@ class Game {
 
 	render() {
 		if (this.controller) this.controller.render();
+		this.effects.render();
 	}
 
 	reset() {

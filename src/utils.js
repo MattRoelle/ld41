@@ -15,4 +15,5 @@ class Utils {
 		const subseconds = game.utils.padZero(Math.floor((dt%1000)/10));
 		return `${minutes}:${seconds}:${subseconds}`;
 	}
+
 }
