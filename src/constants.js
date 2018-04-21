@@ -1,0 +1,7 @@
+const DEBUG = false;
+
+const C = {		
+	TURN_SPEED: 2000,
+	PLAYER_COLLISION_RADIUS: 50,
+	PUCK_COLLISION_RADIUS: 30
+};
