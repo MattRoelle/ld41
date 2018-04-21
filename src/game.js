@@ -19,7 +19,10 @@ class Game {
 		this.input = new Input();
 		this.utils = new Utils();
 		this.audio = new GameAudio();
+
 		this.phaser = new Phaser.Game(800, 600, Phaser.AUTO, "game-host", this.setup, false, false);
+
+		document.getElementById("fs").addEventListener("click", () => this.fullscreen());
 	}
 
 	switchState(state, stateParams) {

@@ -6,6 +6,7 @@ class Loader {
 		g.load.image("blue-player", "assets/blue-player.png");
 		g.load.image("puck", "assets/puck.png");
 		g.load.image("submit-btn", "assets/submit-btn.png");
+		g.load.image("ui", "assets/ui.png");
 	}
 }
 

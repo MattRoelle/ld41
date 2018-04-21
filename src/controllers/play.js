@@ -1,8 +1,8 @@
 let ID = 0;
 
 const BOUNDS = [
-	[	[101, 0], [100, 1200] ],
-	[	[701, 0], [700, 1200] ]
+	[	[101, 0], [100, 1600] ],
+	[	[701, -0], [700, 1600] ]
 ];
 
 function castLineOnField(sx, sy, fx, fy) {
@@ -379,7 +379,7 @@ class ControlledHockeyTeam extends HockeyTeam {
 			this.ui.selectingLine.lineStyle(10, 0xFF0000, 0.2);
 			this.ui.selectingLine.moveTo(points[0].x, points[0].y);
 			this.ui.selectingLine.lineTo(points[1].x, points[1].y);
-			this.ui.selectingLne.endFill();
+			this.ui.selectingLine.endFill();
 		}
 	}
 }
@@ -400,12 +400,12 @@ class Movable {
 
 		const ease1 = points.length > 1 ? Phaser.Easing.Quadratic.In :Phaser.Easing.Quadratic.InOut;
 
-		this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[0], points[0].t*C.TURN_SPEED, ease1, true);
+		this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[0], points[0].t*duration, ease1, true);
 		if (points.length > 1) {
 			this.activeTween.onComplete.add(() => {
 				this.lookAt(points[1]);
 				if (this.movementCancelled) return;
-				this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[1], points[1].t*C.TURN_SPEED, Phaser.Easing.Quadratic.Out, true);
+				this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[1], points[1].t*duration, Phaser.Easing.Quadratic.Out, true);
 			});
 		}
 	}
@@ -477,8 +477,8 @@ class HockeyPlayer extends Movable {
 class PlayController {
 	constructor(params) {
 		this.destroyables = [];
-		this.destroyables.push(game.phaser.add.sprite(0, 0, "rink"));
-		game.phaser.world.setBounds(0, 0, 800, 1200);
+		this.destroyables.push(game.phaser.add.sprite(-100, 0, "rink"));
+		game.phaser.world.setBounds(-100, 0, 1000, 1400);
 		game.phaser.camera.y = 600;
 
 		this.hockeyGame = new HockeyGame();
@@ -495,7 +495,9 @@ class PlayController {
 	update() {
 		this.hockeyGame.update();
 		if (game.input.up()) game.phaser.camera.y -= 14;
-		else if (game.input.down()) game.phaser.camera.y += 10;
+		if (game.input.down()) game.phaser.camera.y += 10;
+		if (game.input.left()) game.phaser.camera.x -= 10;
+		if (game.input.right()) game.phaser.camera.x += 10;
 	}
 
 	render() {
