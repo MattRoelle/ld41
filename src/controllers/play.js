@@ -1,7 +1,7 @@
 let ID = 0;
 
 const BOUNDS = [
-	[	[151, 0], [150, 1200] ],
+	[	[101, 0], [100, 1200] ],
 	[	[701, 0], [700, 1200] ]
 ];
 
@@ -77,11 +77,10 @@ class HockeyGame {
 			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.bottom, this)
 		];
 
-		this.puck = game.phaser.add.sprite(400, 600, "puck");
-		this.puck.anchor.set(0.5);
-		this.puck.pivot.set(0.5);
+		this.puck = new HockeyPuck(400, 800);
 
 		this.executingTurn = false;
+		this.processingFight = false;
 		this.turnEvents = [];
 	}
 
@@ -102,7 +101,13 @@ class HockeyGame {
 		for(let t of this.teams) {
 			t.executeTurn();
 			for(let p of t.players) {
-				p.moveTo(p.pendingMovement, C.TURN_SPEED);
+				if (p.collidingWithPuck) {
+					this.puck.moveTo(p.pendingMovement, C.TURN_SPEED);
+					this.puck.touchedLast = p.id;
+					p.collidingWithPuck = false;
+				} else {
+					p.moveTo(p.pendingMovement, C.TURN_SPEED);
+				}
 			}
 		}
 
@@ -114,7 +119,7 @@ class HockeyGame {
 
 			for(let t of _this.teams) {
 				for(let p of t.players) {
-					if (p.collidingWithPuck) {
+					if (p.collidingWthPuck) {
 					}
 
 					if (p.collidingWith.length > 0) {
@@ -126,7 +131,10 @@ class HockeyGame {
 
 			let delay = 0;
 
-			if (fightOccured) delay += C.FIGHT_SPEED;
+			if (fightOccured) {
+				delay += C.FIGHT_SPEED;
+				_this.processingFight = true;
+			}
 
 			setTimeout(() => {
 				for(let t of _this.teams) {
@@ -134,6 +142,8 @@ class HockeyGame {
 						p.reset();
 					}
 				}
+				_this.puck.touchedLast = -1;
+				_this.processingFight = false
 			}, delay);
 
 		}, C.TURN_SPEED);
@@ -145,18 +155,21 @@ class HockeyGame {
 
 		const winnerIdx = Math.floor(Math.random()*playersInFight.length);
 		for(let i = 0; i < playersInFight.length; i++) {
+			const p = playersInFight[i];
 			if (i != winnerIdx) {
 				var angle = Math.random()*Math.PI*2;
-				var mag = (Math.random()*C.FIGHT_KNOCKBACK) + C.FIGHT_KNOCKBACK;
+				var mag = (Math.random()*C.FIGHT_KNOCKBACK) + C.FIGHT_MIN_KNOCKBACK;
 
-				const p = playersInFight[i];
 				const newPosition = {
 					x: p.sprite.position.x + Math.cos(angle)*mag,
 					y: p.sprite.position.y + Math.sin(angle)*mag
 				};
 
 				p.movementCancelled = false;
+				p.collidingWithPuck = false;
 				p.moveTo(newPosition, C.FIGHT_SPEED);
+			} else {
+				this.puck.touchedLast = p.id;
 			}
 		}
 
@@ -175,28 +188,33 @@ class HockeyGame {
 		if (this.executingTurn) {
 
 			// @PLAYERCOLLISIONS
-			for(let p1 of this.teams[0].players) {
-				for(let p2 of this.teams[1].players) {
-					const distance = Math.sqrt(Math.pow(p2.sprite.position.x - p1.sprite.position.x, 2) + Math.pow(p2.sprite.position.y - p1.sprite.position.y, 2));
+			const allPlayers = this.teams[0].players.concat(this.teams[1].players);
+			for(let i = 0; i < allPlayers.length; i++) {
+				const p1 = allPlayers[i];
+				for(let j = 0; j < allPlayers.length; j++) {
+					if (i != j) {
+						const p2 = allPlayers[j];
+						const distance = Math.sqrt(Math.pow(p2.sprite.position.x - p1.sprite.position.x, 2) + Math.pow(p2.sprite.position.y - p1.sprite.position.y, 2));
 
-					if (distance < C.PLAYER_COLLISION_RADIUS) {
-						p1.cancelMovement();
-						p2.cancelMovement();
+						if (distance < C.PLAYER_COLLISION_RADIUS) {
+							p1.cancelMovement();
+							p2.cancelMovement();
 
-						if (!p1.collidingWith.find(p => p.id == p2.id)) p1.collidingWith.push(p2);
-						if (!p2.collidingWith.find(p => p.id == p1.id)) p2.collidingWith.push(p1);
+							if (!p1.collidingWith.find(p => p.id == p2.id)) p1.collidingWith.push(p2);
+							if (!p2.collidingWith.find(p => p.id == p1.id)) p2.collidingWith.push(p1);
+						}
 					}
-				}
-			}
 
-			// @PUCKCOLLISIONS
-			for(let t of this.teams) {
-				for(let p of t.players) {
-					const distance = Math.sqrt(Math.pow(p.sprite.position.x - this.puck.position.x, 2) + Math.pow(p.sprite.position.y - this.puck.position.y, 2));
+				}
+				// @PUCKCOLLISIONS
+				if (!p1.collidingWithPuck && this.puck.touchedLast != p1.id) {
+					const distance = Math.sqrt(Math.pow(p1.sprite.position.x - this.puck.sprite.position.x, 2) + Math.pow(p1.sprite.position.y - this.puck.sprite.position.y, 2));
 
 					if (distance < C.PUCK_COLLISION_RADIUS) {
-						p.cancelMovement();
-						p.collidingWithPuck = true;
+						p1.cancelMovement();
+						p1.collidingWithPuck = true;
+						this.puck.touchedLast = p1.id;
+						this.puck.cancelMovement();
 					}
 				}
 			}
@@ -238,7 +256,10 @@ class HockeyTeam {
 	executeTurn() {
 	}
 	
-	render() {}
+	render() {
+		for(let p of this.players) p.render();
+	}
+
 	update() {}
 }
 
@@ -260,6 +281,7 @@ class ControlledHockeyTeam extends HockeyTeam {
 		super(color, side, hgame);
 
 		this.selectingMovement = false;
+		this.selectingShot = false;
 		this.playerTarget = null;
 
 		this.ui = {};
@@ -284,36 +306,61 @@ class ControlledHockeyTeam extends HockeyTeam {
 
 	onMouseDown() {
 		if (this.selectingMovement) {
-			this.playerTarget.pendingMovement = {
+			this.playerTarget.pendingMovement = this.limitTarget({
 				x: game.phaser.input.x + game.phaser.camera.x,
 				y: game.phaser.input.y + game.phaser.camera.y
-			};
+			}, this.playerTarget.sprite);
 			this.selectingMovement = false;
 		}
 	}
 
 	render() {
-		if (!this.hgame.executingTurn) {
-			this.ui.selectingLine.clear();
+		super.render();
 
+		this.ui.selectingLine.clear();
+		if (!this.hgame.executingTurn && !this.hgame.processingFight) {
 			if (this.selectingMovement) {
-				this.drawPlayerLine(this.playerTarget.sprite,  {
+				const range = this.playerTarget.collidingWithPuck ? C.MAX_SHOT_RANGE : C.MAX_MOVEMENT;
+				const targetPos = this.limitTarget({
 					x: game.phaser.input.x + game.phaser.camera.x,
  	 	 			y: game.phaser.input.y + game.phaser.camera.y
-				});
+				}, this.playerTarget.sprite, range);
+
+				this.playerTarget.lookAt(targetPos);
+				this.drawRangeCircle(this.playerTarget.sprite, range);
+				this.drawPlayerLine(this.playerTarget.sprite,  targetPos);
 			}
 
 			for(let p of this.players) {
 				if (!!p.pendingMovement) {
-					this.drawPlayerLine(p.sprite, p.pendingMovement);
+					this.drawPlayerLine(p.sprite, this.limitTarget(p.pendingMovement, p.sprite, p.collidingWithPuck ? C.MAX_SHOT_RANGE : C.MAX_MOVEMENT));
 				}
 			}
 		}
 	}
 
+	limitTarget(targetPos, origin, upper) {
+		const ret = { x: targetPos.x, y: targetPos.y };
+		if (game.utils.dist(targetPos.x, targetPos.y, origin.x, origin.y) > upper) {
+			const tx = targetPos.x, ty = targetPos.y, sx = origin.x, sy = origin.y;
+			const theta = Math.atan2(ty - sy, tx - sx);
+
+			ret.x = sx + Math.cos(theta)*upper;
+			ret.y = sy + Math.sin(theta)*upper;
+		}
+		return ret;
+	}
+
+	drawRangeCircle(p, r) {
+		this.ui.selectingLine.beginFill(0x00FF00, 0);
+		this.ui.selectingLine.lineStyle(4, 0x1122F1, 0.5);
+		this.ui.selectingLine.drawCircle(p.x, p.y, r*2);
+		this.ui.selectingLine.endFill();
+	}
+
 	drawPlayerLine(p, target) {
-		this.ui.selectingLine.beginFill(0xFF0000);
-		this.ui.selectingLine.lineStyle(10, 0xFF0000, 1);
+		this.ui.selectingLine.beginFill(0xFF0000, 0);
+		this.ui.selectingLine.lineStyle(10, 0xFF0000, 0.2);
 
 		this.ui.selectingLine.moveTo(p.x, p.y);
 
@@ -328,17 +375,66 @@ class ControlledHockeyTeam extends HockeyTeam {
 		
 		this.ui.selectingLine.lineTo(points[0].x, points[0].y);
 		if (points.length > 1) {
-			this.ui.selectingLine.beginFill(0xFF0000);
-			this.ui.selectingLine.lineStyle(10, 0xFF0000, 1);
+			this.ui.selectingLine.beginFill(0xFF0000, 0);
+			this.ui.selectingLine.lineStyle(10, 0xFF0000, 0.2);
 			this.ui.selectingLine.moveTo(points[0].x, points[0].y);
 			this.ui.selectingLine.lineTo(points[1].x, points[1].y);
-			this.ui.selectingLine.endFill();
+			this.ui.selectingLne.endFill();
 		}
 	}
 }
 
-class HockeyPlayer {
+class Movable {
+	moveTo(position, duration) {
+		this.movementCancelled = false;
+
+		const sx = this.sprite.position.x;
+		const sy = this.sprite.position.y;
+		const fx = position.x;
+		const fy = position.y;
+
+		const points = castLineOnField(sx, sy, fx, fy);
+
+		// only supporting 1 bounce b/c lazy
+		this.lookAt(points[0]);
+
+		const ease1 = points.length > 1 ? Phaser.Easing.Quadratic.In :Phaser.Easing.Quadratic.InOut;
+
+		this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[0], points[0].t*C.TURN_SPEED, ease1, true);
+		if (points.length > 1) {
+			this.activeTween.onComplete.add(() => {
+				this.lookAt(points[1]);
+				if (this.movementCancelled) return;
+				this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[1], points[1].t*C.TURN_SPEED, Phaser.Easing.Quadratic.Out, true);
+			});
+		}
+	}
+
+	lookAt(position) {
+		const theta = Math.atan2(this.sprite.position.y - position.y, this.sprite.position.x - position.x);
+		this.sprite.angle = (theta*180/Math.PI) - 90;
+	}
+
+	cancelMovement() {
+		this.movementCancelled = true;
+		if (!!this.activeTween) this.activeTween.stop();
+	}
+}
+
+class HockeyPuck extends Movable {
+	constructor(x, y) {
+		super();
+		this.sprite = game.phaser.add.sprite(x, y, "puck");
+		this.sprite.anchor.set(0.5);
+		this.sprite.pivot.set(0.5);
+		this.touchedLast = -1;
+	}
+}
+
+class HockeyPlayer extends Movable {
 	constructor(ordinal, color, side) {
+		super();
+
 		this.id = ++ID;
 		let x = 200 + (ordinal*200);
 
@@ -359,40 +455,18 @@ class HockeyPlayer {
 		this.sprite.bringToTop();
 
 		this.reset();
+		this.collidingWithPuck = false;
 	}
 
 	reset() {
 		this.pendingMovement = null;
 		this.collidingWith = [];
-		this.collidingWithPuck = false;
 		this.fightProcessed = false;
 		this.movementCancelled = false;
 	}
 
-	moveTo(position, duration) {
-		if (this.movementCancelled) return;
-
-		const sx = this.sprite.position.x;
-		const sy = this.sprite.position.y;
-		const fx = position.x;
-		const fy = position.y;
-
-		const points = castLineOnField(sx, sy, fx, fy);
-
-		// only supporting 1 bounce b/c lazy
-
-		this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[0], points[0].t*C.TURN_SPEED, Phaser.Easing.Quadratic.InOut, true);
-		if (points.length > 1) {
-			this.activeTween.onComplete.add(() => {
-				if (this.movementCancelled) return;
-				this.activeTween = game.phaser.add.tween(this.sprite.position).to(points[1], points[1].t*C.TURN_SPEED, Phaser.Easing.Quadratic.InOut, true);
-			});
-		}
-	}
-
-	cancelMovement() {
-		this.movementCancelled = true;
-		this.activeTween.stop();
+	render() {
+		this.sprite.bringToTop();
 	}
 
 	destroy() {
