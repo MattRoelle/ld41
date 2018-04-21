@@ -105,6 +105,7 @@ class HockeyGame {
 					this.puck.moveTo(p.pendingMovement, C.TURN_SPEED);
 					this.puck.touchedLast = p.id;
 					p.collidingWithPuck = false;
+					game.phaser.add.tween(p.shootRing.scale).to({x: 0, y: 0}, 1000, Phaser.Easing.Quadratic.InOut, true);
 				} else {
 					p.moveTo(p.pendingMovement, C.TURN_SPEED);
 				}
@@ -113,40 +114,68 @@ class HockeyGame {
 
 		const _this = this;
 		setTimeout(() => {
-			let fightOccured = false;
-			let puckOccured = false;
 			_this.executingTurn = false;
+			_this.postExecuteTurn();
+		}, C.TURN_SPEED);
+	}
 
+	postExecuteTurn() {
+		console.log("postexec");
+		const _this = this;
+
+		let fightOccured = false;
+		let puckOccured = false;
+
+		for(let t of _this.teams) {
+			for(let p of t.players) {
+				if (p.collidingWthPuck) {
+				}
+
+				if (p.collidingWith.length > 0) {
+					fightOccured = true;
+					_this.processFight(p);
+				}
+			}
+		}
+
+		let delay = 0;
+
+		if (fightOccured) {
+			delay += C.FIGHT_SPEED + C.PREFIGHT_SPEED;
+			_this.processingFight = true;
+		}
+
+		setTimeout(() => {
 			for(let t of _this.teams) {
 				for(let p of t.players) {
-					if (p.collidingWthPuck) {
+					if (p.collidingWithPuck) {
+						game.phaser.add.tween(p.shootRing.scale).to({x: 1, y: 1}, 1000, Phaser.Easing.Quadratic.InOut, true);
 					}
-
-					if (p.collidingWith.length > 0) {
-						fightOccured = true;
-						_this.processFight(p);
-					}
+					p.reset();
 				}
 			}
 
-			let delay = 0;
-
-			if (fightOccured) {
-				delay += C.FIGHT_SPEED + C.PREFIGHT_SPEED;
-				_this.processingFight = true;
+			if (!fightOccured && !puckOccured) {
+				_this.endTurn();
+			} else {
+				_this.checkEvents();
+				_this.postExecuteTurn();
 			}
+		}, delay);
+	}
 
-			setTimeout(() => {
-				for(let t of _this.teams) {
-					for(let p of t.players) {
-						p.reset();
-					}
+	endTurn() {
+		const _this = this;
+		for(let t of _this.teams) {
+			for(let p of t.players) {
+				if (p.collidingWithPuck) {
+					game.phaser.add.tween(p.shootRing.scale).to({x: 1, y: 1}, 1000, Phaser.Easing.Quadratic.InOut, true);
 				}
-				_this.puck.touchedLast = -1;
-				_this.processingFight = false
-			}, delay);
-
-		}, C.TURN_SPEED);
+				p.reset();
+			}
+		}
+		_this.puck.touchedLast = -1;
+		_this.processingFight = false
 	}
 
 	processFight(p) {
@@ -156,6 +185,7 @@ class HockeyGame {
 		if (playersInFight.length > 0) {
 			game.effects.fightAnim(playersInFight[0].sprite.x, playersInFight[0].sprite.y);
 
+			let anyTouchPuck = false;
 			const winnerIdx = Math.floor(Math.random()*playersInFight.length);
 			for(let i = 0; i < playersInFight.length; i++) {
 				const p = playersInFight[i];
@@ -169,16 +199,22 @@ class HockeyGame {
 					};
 
 					p.movementCancelled = false;
+					if (p.collidingWithPuck) anyTouchPuck = true;
 					p.collidingWithPuck = false;
 					setTimeout(() => {
 						p.moveTo(newPosition, C.FIGHT_SPEED, true);
 					}, C.PREFIGHT_SPEED);
-				} else {
-					this.puck.touchedLast = p.id;
 				}
 			}
 
-				for(let p of playersInFight) p.fightProcessed = true;
+			const winp = playersInFight[winnerIdx];
+			if (anyTouchPuck || winp.collidingWithPuck) {
+				this.puck.touchedLast = winp.id;
+				//this.puck.sprite.position.x = winp.sprite.position.x;
+				//this.puck.sprite.position.y = winp.sprite.position.x;
+			}
+
+			for(let p of playersInFight) p.fightProcessed = true;
 		}
 	}
 
@@ -188,44 +224,51 @@ class HockeyGame {
 		for(let p2 of p.collidingWith) this.walkFightList(p2, list);
 	}
 
+	checkEvents() {
+		// @PLAYERCOLLISIONS
+		const allPlayers = this.teams[0].players.concat(this.teams[1].players);
+		for(let i = 0; i < allPlayers.length; i++) {
+			const p1 = allPlayers[i];
+			for(let j = 0; j < allPlayers.length; j++) {
+				if (i != j) {
+					const p2 = allPlayers[j];
+					const distance = Math.sqrt(Math.pow(p2.sprite.position.x - p1.sprite.position.x, 2) + Math.pow(p2.sprite.position.y - p1.sprite.position.y, 2));
+
+					if ((distance < C.PLAYER_COLLISION_RADIUS) || (p1.collidingWithPuck && p2.collidingWithPuck)) {
+						p1.cancelMovement();
+						p2.cancelMovement();
+
+						let anyCollision = false;
+
+						if (!p1.collidingWith.find(p => p.id == p2.id)) { p1.collidingWith.push(p2); anyCollision = true; }
+						if (!p2.collidingWith.find(p => p.id == p1.id)) { p2.collidingWith.push(p1); anyCollision = true; }
+
+						if (anyCollision) {
+							game.effects.fightRing(p1.sprite.position.x, p1.sprite.position.y);
+						}
+					}
+				}
+			}
+
+			// @PUCKCOLLISIONS
+			if (!p1.collidingWithPuck && this.puck.touchedLast != p1.id) {
+				const distance = Math.sqrt(Math.pow(p1.sprite.position.x - this.puck.sprite.position.x, 2) + Math.pow(p1.sprite.position.y - this.puck.sprite.position.y, 2));
+
+				if (distance < C.PUCK_COLLISION_RADIUS) {
+					p1.cancelMovement();
+					p1.collidingWithPuck = true;
+					this.puck.touchedLast = p1.id;
+					this.puck.cancelMovement();
+				}
+			}
+		}
+	}
+
 	update() {
 		for(let t of this.teams) t.update();
 
 		if (this.executingTurn) {
-
-			// @PLAYERCOLLISIONS
-			const allPlayers = this.teams[0].players.concat(this.teams[1].players);
-			for(let i = 0; i < allPlayers.length; i++) {
-				const p1 = allPlayers[i];
-				for(let j = 0; j < allPlayers.length; j++) {
-					if (i != j) {
-						const p2 = allPlayers[j];
-						const distance = Math.sqrt(Math.pow(p2.sprite.position.x - p1.sprite.position.x, 2) + Math.pow(p2.sprite.position.y - p1.sprite.position.y, 2));
-
-						if (distance < C.PLAYER_COLLISION_RADIUS && p1.collidingWith.length == 0 && p2.collidingWith.length == 0) {
-							p1.cancelMovement();
-							p2.cancelMovement();
-
-							game.effects.fightRing(p1.sprite.position.x, p1.sprite.position.y);
-
-							if (!p1.collidingWith.find(p => p.id == p2.id)) p1.collidingWith.push(p2);
-							if (!p2.collidingWith.find(p => p.id == p1.id)) p2.collidingWith.push(p1);
-						}
-					}
-
-				}
-				// @PUCKCOLLISIONS
-				if (!p1.collidingWithPuck && this.puck.touchedLast != p1.id) {
-					const distance = Math.sqrt(Math.pow(p1.sprite.position.x - this.puck.sprite.position.x, 2) + Math.pow(p1.sprite.position.y - this.puck.sprite.position.y, 2));
-
-					if (distance < C.PUCK_COLLISION_RADIUS) {
-						p1.cancelMovement();
-						p1.collidingWithPuck = true;
-						this.puck.touchedLast = p1.id;
-						this.puck.cancelMovement();
-					}
-				}
-			}
+			this.checkEvents();
 		}
 	}
 
@@ -457,7 +500,7 @@ class HockeyPlayer extends Movable {
 
 		let y;
 		if (side == TEAM_SIDE.top) {
-			y = 250;
+			y = 750;
 			if (ordinal != 1) y += 50;
 		} else {
 			y = 950;
@@ -469,9 +512,10 @@ class HockeyPlayer extends Movable {
 		this.sprite.pivot.set(0.5);
 		this.sprite.bringToTop();
 
-		this.shootRing = game.phaser.add.sprite(x, y, "shootring");
+		this.shootRing = game.phaser.add.sprite(x, y, color == TEAM_COLORS.red ? "redshootring" : "blueshootring");
 		this.shootRing.anchor.set(0.5);
 		this.shootRing.pivot.set(0.5);
+		this.shootRing.scale.set(0);
 
 		this.reset();
 		this.collidingWithPuck = false;
