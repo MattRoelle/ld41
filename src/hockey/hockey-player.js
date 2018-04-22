@@ -10,10 +10,10 @@ class HockeyPlayer extends Movable {
 
 		let y;
 		if (side == TEAM_SIDE.top) {
-			y = 450;
+			y = 350;
 			if (ordinal != 1) y += 50;
 		} else {
-			y = 950;
+			y = 1050;
 			if (ordinal != 1) y -= 50;
 		}
 

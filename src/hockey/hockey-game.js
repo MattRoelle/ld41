@@ -2,8 +2,8 @@ class HockeyGame {
 	constructor(opts) {
 		this.opts = opts;
 		this.teams = [
-			//new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
-			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
+			new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
+			//new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
 			new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this)
 		];
 
@@ -17,7 +17,7 @@ class HockeyGame {
 			this.bounds.push(s);
 		}
 
-		this.puck = new HockeyPuck(400, 800);
+		this.puck = new HockeyPuck(400, 700);
 
 		this.executingTurn = false;
 		this.processingFight = false;
@@ -40,11 +40,16 @@ class HockeyGame {
 
 		this.tstart = game.phaser.time.now;
 
+		for(let t of this.teams) t.preExecuteTurn();
+
 		for(let t of this.teams) {
 			t.executeTurn();
 			for(let p of t.players) {
 				if (p.collidingWithPuck) {
 					if (!!p.pendingMovement) {
+						if (!!this.puckTween) this.puckTween.stop();
+						this.puck.sprite.position.x = p.sprite.position.x;
+						this.puck.sprite.position.y = p.sprite.position.y;
 						this.puck.moveTo(p.pendingMovement, C.TURN_SPEED);
 						this.puck.touchedLast = p.id;
 						p.collidingWithPuck = false;
@@ -62,39 +67,20 @@ class HockeyGame {
 	endTurn() {
 		const _this = this;
 
-		const plyrsPucking = [];
-		for(let t of _this.teams) {
-			for(let p of t.players) {
-				if (p.collidingWithPuck) {
-					plyrsPucking.push(p);
-				}
-			}
-		}
-
-		if (plyrsPucking.length >= 2) {
-			for(let p of plyrsPucking) p.collidingWith = [];
-			for(let i = 1; i < plyrsPucking.length; i++) {
-				plyrsPucking[0].collidingWith.push(plyrsPucking[i]);
-			}
-			this.processFight(plyrsPucking[0]);
-			return;
-		}
 
 		for(let t of _this.teams) {
 			for(let p of t.players) {
 				p.inFight = false;
-				p.inPuckFight = false;
 				p.collidingWith = [];
 			}
 		}
 
-		this.checkEvents();
+		this.checkEvents(true);
 
 		let fightOccured = false;
 
 		for(let t of this.teams) {
 			for(let p of t.players) {
-				if (p.sprite.body.velocity.getMagnitude() > 1) allVelocityDone = false;
 				if (p.collidingWith.length > 0) {
 					fightOccured = true;
 					this.processFight(p);
@@ -108,6 +94,7 @@ class HockeyGame {
 			for(let p of t.players) {
 				if (p.collidingWithPuck) {
 					game.phaser.add.tween(p.shootRing.scale).to({x: 1, y: 1}, 1000, Phaser.Easing.Quadratic.InOut, true);
+					this.puckTween = game.phaser.add.tween(this.puck.sprite.position).to(p.sprite.position, 800, Phaser.Easing.Quadratic.InOut, true);
 				}
 				p.reset();
 			}
@@ -178,7 +165,7 @@ class HockeyGame {
 		for(let p2 of p.collidingWith) this.walkFightList(p2, list);
 	}
 
-	checkEvents() {
+	checkEvents(forceCollisions) {
 		// @PLAYERCOLLISIONS
 		const allPlayers = this.teams[0].players.concat(this.teams[1].players);
 		for(let i = 0; i < allPlayers.length; i++) {
@@ -205,7 +192,7 @@ class HockeyGame {
 			}
 
 			// @PUCKCOLLISIONS
-			if (!p1.inFight && !p1.collidingWithPuck && this.puck.touchedLast != p1.id) {
+			if ((forceCollisions || !p1.inFight) && !p1.collidingWithPuck && this.puck.touchedLast != p1.id) {
 				const distance = Math.sqrt(Math.pow(p1.sprite.position.x - this.puck.sprite.position.x, 2) + Math.pow(p1.sprite.position.y - this.puck.sprite.position.y, 2));
 
 				if (distance < C.PUCK_COLLISION_RADIUS) {
@@ -230,6 +217,8 @@ class HockeyGame {
 	}
 
 	update() {
+		const _this = this;
+
 		for(let t of this.teams) {
 			for(let p of t.players) {
 				for(let b of this.bounds) {
@@ -263,9 +252,28 @@ class HockeyGame {
 
 			allVelocityDone = allVelocityDone && (Math.abs(this.puck.sprite.body.velocity.getMagnitude()) < 1);
 
+			
+			const plyrsPucking = [];
+			for(let t of _this.teams) {
+				for(let p of t.players) {
+					if (p.collidingWithPuck) {
+						plyrsPucking.push(p);
+					}
+				}
+			}
+
+			if (plyrsPucking.length >= 2) {
+				for(let p of plyrsPucking) { p.collidingWith = []; }
+				for(let i = 1; i < plyrsPucking.length; i++) {
+					plyrsPucking[0].collidingWith.push(plyrsPucking[i]);
+				}
+				this.processFight(plyrsPucking[0]);
+			}
+
 			if (allVelocityDone && (game.phaser.time.now - this.tstart > 300) && this.nFights == 0) {
 				this.endTurn();
 			}
+
 		}
 	}
 

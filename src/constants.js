@@ -1,4 +1,4 @@
-let DEBUG = true;
+let DEBUG = false;
 
 const C = {		
 	TURN_SPEED: 1200,

@@ -11,6 +11,18 @@ class HockeyTeam {
 		];
 	}
 
+	limitTarget(targetPos, origin, upper) {
+		const ret = { x: targetPos.x, y: targetPos.y };
+		if (game.utils.dist(targetPos.x, targetPos.y, origin.x, origin.y) > upper) {
+			const tx = targetPos.x, ty = targetPos.y, sx = origin.x, sy = origin.y;
+			const theta = Math.atan2(ty - sy, tx - sx);
+
+			ret.x = sx + Math.cos(theta)*upper;
+			ret.y = sy + Math.sin(theta)*upper;
+		}
+		return ret;
+	}
+
 	preExecuteTurn() {
 
 	}
@@ -27,19 +39,6 @@ class HockeyTeam {
 	destroy() {
 		for(let p of this.players) {
 			p.destroy();
-		}
-	}
-}
-
-class AIHockeyTeam extends HockeyTeam {
-	constructor(color, side, hgame) { super(color, side, hgame); }
-
-	preExecuteTurn() {
-		for(let p of this.players) {
-			p.pendingMovement = {
-				x: p.sprite.x,
-				y: p.sprite.y + 100
-			};
 		}
 	}
 }
@@ -114,18 +113,6 @@ class ControlledHockeyTeam extends HockeyTeam {
 				}
 			}
 		}
-	}
-
-	limitTarget(targetPos, origin, upper) {
-		const ret = { x: targetPos.x, y: targetPos.y };
-		if (game.utils.dist(targetPos.x, targetPos.y, origin.x, origin.y) > upper) {
-			const tx = targetPos.x, ty = targetPos.y, sx = origin.x, sy = origin.y;
-			const theta = Math.atan2(ty - sy, tx - sx);
-
-			ret.x = sx + Math.cos(theta)*upper;
-			ret.y = sy + Math.sin(theta)*upper;
-		}
-		return ret;
 	}
 
 	drawRangeCircle(p, r) {
