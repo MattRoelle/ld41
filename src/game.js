@@ -24,7 +24,6 @@ class Game {
 
 		this.phaser = new Phaser.Game(800, 600, Phaser.AUTO, "game-host", this.setup, false, false);
 
-		document.getElementById("fs").addEventListener("click", () => this.fullscreen());
 		document.addEventListener("keydown", (e) => { if (e.which == 70) this.fullscreen(); });
 	}
 
