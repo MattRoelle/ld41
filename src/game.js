@@ -131,7 +131,7 @@ class Game {
 	update() {
 		if (this.controller) this.controller.update();
 		this.input.update();
-		this.phaser.debug.text(this.phaser.time.fps || '--', 700, 14, "#00ff00"); 
+		//this.phaser.debug.text(this.phaser.time.fps || '--', 700, 14, "#00ff00"); 
 	}
 
 	render() {

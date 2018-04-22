@@ -101,7 +101,7 @@ class PlayController {
 							if (_this.opts.startingTeam == 0 && _this.params.players == 1 && _this.opts.turnsRemaining > 0) {
 								_this.hockeyGame.executeTurn();
 							}
-						}, 500);
+						}, 1000);
 					});
 				}, 2500);
 			},
@@ -172,7 +172,7 @@ class PlayController {
 					const _this = this;
 					setTimeout(() => {
 						_this.hockeyGame.executeTurn();
-					}, 1000);
+					}, 1500);
 				}
 			}
 		}

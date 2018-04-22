@@ -7,6 +7,10 @@ class TitleController {
 
 		this.players = 1;
 
+		setTimeout(() => {
+			game.audio.playSfx(SFX_TYPES.TITLE);
+		}, 1000);
+
 		const rp = game.phaser.add.sprite(400, -1400, "rinkpreview");
 		this.destroyables.push(rp);
 		rp.anchor.set(0.5, 0);

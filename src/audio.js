@@ -35,6 +35,14 @@ const SFX_TYPES = {
 		key: "tie",
 		volume: 0.5
 	},
+	TITLE: {
+		key: "title",
+		volume: 0.5
+	},
+	FACE_PUCK: {
+		key: "face-puck",
+		volume: 0.5
+	},
 };
  
 class GameAudio {

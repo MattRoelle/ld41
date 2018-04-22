@@ -39,7 +39,8 @@ class HockeyGame {
 		this.puck = new HockeyPuck(400, 700);
 		this.puck.sprite.body.setCollisionGroup(this.puckCollisionGroup);
 
-		this.puck.sprite.body.collides([ this.playerCollisionGroup, ], () => {
+		this.puck.sprite.body.collides([ this.playerCollisionGroup, ], (e) => {
+			console.log("qwe", e);
 			game.audio.playSfx(SFX_TYPES.PUCK_HIT);
 		}, this);
 

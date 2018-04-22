@@ -23,7 +23,7 @@ class Movable {
 
 	clampVelocity() { 
 		const m = game.utils.magnitude(this.sprite.body.velocity);
-		if (m < 25) {
+		if (m < 30) {
 			this.sprite.body.setZeroVelocity();
 		}
 	}

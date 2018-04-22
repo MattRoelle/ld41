@@ -38,6 +38,8 @@ class Loader {
 		g.load.audio("blue-win", ["assets/audio/blue-team-wins.wav"]);
 		g.load.audio("red-win", ["assets/audio/red-team-wins.wav"]);
 		g.load.audio("tie", ["assets/audio/tie.wav"]);
+		g.load.audio("title", ["assets/audio/title.wav"]);
+		g.load.audio("face-puck", ["assets/audio/face-puck.wav"]);
 	}
 }
 
