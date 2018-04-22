@@ -42,7 +42,10 @@ class HockeyGame {
 		this.puck.sprite.body.collides([ this.playerCollisionGroup, ], () => {
 			game.audio.playSfx(SFX_TYPES.PUCK_HIT);
 		}, this);
-		this.puck.sprite.body.collides([ this.boundsCollisionGroup ]);
+
+		this.puck.sprite.body.collides([ this.boundsCollisionGroup ], () => {
+			game.audio.playSfx(SFX_TYPES.PUCK_WALL);
+		}, this);
 
 		for(let t of this.teams) {
 			for(let p of t.players) {
@@ -70,8 +73,10 @@ class HockeyGame {
 			if (this.opts.turnsRemaining > 0) {
 				if (this.currentTeamsTurn == 1) {
 					game.effects.announcement("BLUE TURN", "#0000ff");
+					game.audio.playSfx(SFX_TYPES.BLUE_TURN);
 				} else {
 					game.effects.announcement("RED TURN", "#ff0000");
+					game.audio.playSfx(SFX_TYPES.RED_TURN);
 				}
 			}
 		}, 500);
@@ -126,8 +131,10 @@ class HockeyGame {
 		if (!this.scored && this.opts.turnsRemaining > 0) {
 			if (_this.currentTeamsTurn == 1) {
 				game.effects.announcement("BLUE TURN", "#0000ff");
+					game.audio.playSfx(SFX_TYPES.BLUE_TURN);
 			} else {
 				game.effects.announcement("RED TURN", "#ff0000");
+					game.audio.playSfx(SFX_TYPES.RED_TURN);
 			}
 		}
 	}

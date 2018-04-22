@@ -139,9 +139,12 @@ class PlayController {
 
 		if (this.gameData.redScore > this.gameData.blueScore) {
 			game.effects.announcement("RED TEAM WINS", "#ff0000");
+			game.audio.playSfx(SFX_TYPES.RED_WIN);
 		} else if (this.gameData.blueScore > this.gameData.redScore) {
 			game.effects.announcement("BLUE TEAM WINS", "#0000ff");
+			game.audio.playSfx(SFX_TYPES.BLUE_WIN);
 		} else {
+			game.audio.playSfx(SFX_TYPES.TIE);
 			game.effects.announcement("TIE", "#ffffff");
 		}
 

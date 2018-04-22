@@ -8,7 +8,7 @@ class HockeyPuck extends Movable {
 		game.phaser.physics.p2.enable([this.sprite], Phaser.Physics.ARCADE);
 		this.sprite.body.setCircle(18);
 		this.sprite.body.restitution = 0.8;
-		this.sprite.body.damping = 0.75;
+		this.sprite.body.damping = 0.4;
 		this.sprite.body.debug = DEBUG
 	}
 

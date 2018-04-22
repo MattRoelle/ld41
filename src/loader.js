@@ -32,6 +32,12 @@ class Loader {
 		g.load.audio("unbelievable", ["assets/audio/pucking-unbelievable.wav"]);
 		g.load.audio("puckhit", ["assets/audio/puckhit.ogg"]);
 		g.load.audio("hit1", ["assets/audio/hit1.ogg"]);
+		g.load.audio("puckwall", ["assets/audio/puckwall.wav"]);
+		g.load.audio("blues-turn", ["assets/audio/blues-turn.wav"]);
+		g.load.audio("reds-turn", ["assets/audio/reds-turn.wav"]);
+		g.load.audio("blue-win", ["assets/audio/blue-team-wins.wav"]);
+		g.load.audio("red-win", ["assets/audio/red-team-wins.wav"]);
+		g.load.audio("tie", ["assets/audio/tie.wav"]);
 	}
 }
 

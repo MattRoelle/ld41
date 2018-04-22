@@ -7,8 +7,32 @@ const SFX_TYPES = {
 		key: "puckhit",
 		volume: 0.5
 	},
+	PUCK_WALL: { 
+		key: "puckwall",
+		volume: 0.5
+	},
 	HIT1: { 
 		key: "hit1",
+		volume: 0.5
+	},
+	BLUE_TURN: {
+		key: "blues-turn",
+		volume: 0.5
+	},
+	RED_TURN: {
+		key: "reds-turn",
+		volume: 0.5
+	},
+	BLUE_WIN: {
+		key: "blue-win",
+		volume: 0.5
+	},
+	RED_WIN: {
+		key: "red-win",
+		volume: 0.5
+	},
+	TIE: {
+		key: "tie",
 		volume: 0.5
 	},
 };
