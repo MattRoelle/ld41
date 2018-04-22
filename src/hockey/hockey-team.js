@@ -1,8 +1,9 @@
 class HockeyTeam {
-	constructor(color, side, hgame) {
+	constructor(color, side, hgame, idx) {
 		this.color = color;
 		this.position = side;
 		this.hgame = hgame;
+		this.teamIndex = idx;
 
 		this.players = [
 			new HockeyPlayer(0, color, side),
@@ -44,8 +45,8 @@ class HockeyTeam {
 }
 
 class ControlledHockeyTeam extends HockeyTeam {
-	constructor(color, side, hgame) {
-		super(color, side, hgame);
+	constructor(color, side, hgame, idx) {
+		super(color, side, hgame, idx);
 
 		this.selectingMovement = false;
 		this.selectingShot = false;
@@ -58,10 +59,13 @@ class ControlledHockeyTeam extends HockeyTeam {
 		for(let p of this.players) {
 			p.sprite.inputEnabled = true;
 			p.sprite.events.onInputDown.add(() => {
-				if (!this.selectingMovement && !this.hgame.executingTurn) {
-					p.pendingMovement = null;
-					this.selectingMovement = true;
-					this.playerTarget = p;
+				if (!this.selectingMovement && !this.hgame.executingTurn && (this.hgame.currentTeamsTurn == this.teamIndex)) {
+					if (p.pendingMovement != null) {
+						p.pendingMovement = null;
+					} else {
+						this.selectingMovement = true;
+						this.playerTarget = p;
+					}
 				}
 			}, p);
 		}

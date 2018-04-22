@@ -3,8 +3,8 @@ class HockeyGame {
 		this.opts = opts;
 		this.teams = [
 			//new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
-			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
-			new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this)
+			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
+			new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this, 1)
 		];
 
 		this.bounds = [];
@@ -24,6 +24,7 @@ class HockeyGame {
 		this.processingFight = false;
 		this.turnEvents = [];
 		this.nFights = 0;
+		this.currentTeamsTurn = 0;
 	}
 
 	destroy() {
@@ -41,14 +42,13 @@ class HockeyGame {
 
 		this.tstart = game.phaser.time.now;
 
-		for(let t of this.teams) t.preExecuteTurn();
+		const t = this.teams[this.currentTeamsTurn];
+		t.preExecuteTurn();
+		t.executeTurn();
 
-		for(let t of this.teams) {
-			t.executeTurn();
-			for(let p of t.players) {
-				if (!!p.pendingMovement) {
-					p.moveTo(p.pendingMovement, C.TURN_SPEED);
-				}
+		for(let p of t.players) {
+			if (!!p.pendingMovement) {
+				p.moveTo(p.pendingMovement, C.TURN_SPEED);
 			}
 		}
 	}
@@ -66,6 +66,7 @@ class HockeyGame {
 
 		_this.executingTurn = false;
 		_this.processingFight = false
+		_this.currentTeamsTurn = (_this.currentTeamsTurn + 1) % 2;
 	}
 
 	processFight(p) {

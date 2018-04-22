@@ -8,7 +8,7 @@ class PlayController {
 		game.phaser.world.setBounds(-100, -50, 1000, 1400);
 		game.phaser.camera.y = 600;
 
-		this.ui = game.phaser.add.sprite(0, 0, "ui");
+		this.ui = game.phaser.add.sprite(0, 0, null);
 		this.ui.fixedToCamera = true;
 		this.destroyables.push(this.ui);
 
