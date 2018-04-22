@@ -1,5 +1,8 @@
 let ID = 0;
 
+const GOAL_1 = { x: 400, y: 190 };
+const GOAL_2 = { x: 400, y: 1210 };
+
 const BOUNDS = [
 	[	[101, 0], [100, 1600] ],
 	[	[701, -0], [700, 1600] ]
@@ -30,7 +33,6 @@ function castLineOnField(sx, sy, fx, fy) {
 		ret.push({x: intersection.x, y: intersection.y, t: (distance/idistance) });
 
 		const rise = intersection.y - sy;
-
 
 		const bb = intersectedBound;
 		let theta;
@@ -70,11 +72,12 @@ function castLineOnField(sx, sy, fx, fy) {
 }
 
 class HockeyGame {
-	constructor() {
+	constructor(opts) {
+		this.opts = opts;
 		this.teams = [
-			new AIHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.top, this),
-			//new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.top),
-			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.bottom, this)
+			//new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
+			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
+			new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this)
 		];
 
 		this.puck = new HockeyPuck(400, 800);
@@ -84,10 +87,18 @@ class HockeyGame {
 		this.turnEvents = [];
 	}
 
+	destroy() {
+		this.puck.destroy();
+		for(let t of this.teams) {
+			t.destroy();
+		}
+	}
+
 	executeTurn() {
 		if (this.executingTurn) return;
 		this.executingTurn = true;
 
+		/*
 		for(let t of this.teams) {
 			t.preExecuteTurn();
 			for(let p of t.players) {
@@ -97,17 +108,20 @@ class HockeyGame {
 				}
 			}
 		}
+		*/
 
 		for(let t of this.teams) {
 			t.executeTurn();
 			for(let p of t.players) {
-				if (p.collidingWithPuck) {
-					this.puck.moveTo(p.pendingMovement, C.TURN_SPEED);
-					this.puck.touchedLast = p.id;
-					p.collidingWithPuck = false;
-					game.phaser.add.tween(p.shootRing.scale).to({x: 0, y: 0}, 1000, Phaser.Easing.Quadratic.InOut, true);
-				} else {
-					p.moveTo(p.pendingMovement, C.TURN_SPEED);
+				if (!!p.pendingMovement) {
+					if (p.collidingWithPuck) {
+						this.puck.moveTo(p.pendingMovement, C.TURN_SPEED);
+						this.puck.touchedLast = p.id;
+						p.collidingWithPuck = false;
+						game.phaser.add.tween(p.shootRing.scale).to({x: 0, y: 0}, 1000, Phaser.Easing.Quadratic.InOut, true);
+					} else {
+						p.moveTo(p.pendingMovement, C.TURN_SPEED);
+					}
 				}
 			}
 		}
@@ -262,6 +276,15 @@ class HockeyGame {
 				}
 			}
 		}
+
+		// @SCORING
+		if (game.utils.dist(this.puck.sprite.position.x, this.puck.sprite.position.y, GOAL_1.x, GOAL_1.y) < C.GOAL_RADIUS) {
+			// blue team scores
+			this.opts.onScore(TEAM_COLORS.red);
+		} else if (game.utils.dist(this.puck.sprite.position.x, this.puck.sprite.position.y, GOAL_2.x, GOAL_2.y) < C.GOAL_RADIUS) {
+			// red team scores
+			this.opts.onScore(TEAM_COLORS.blue);
+		}
 	}
 
 	update() {
@@ -312,6 +335,12 @@ class HockeyTeam {
 	}
 
 	update() {}
+
+	destroy() {
+		for(let p of this.players) {
+			p.destroy();
+		}
+	}
 }
 
 class AIHockeyTeam extends HockeyTeam {
@@ -350,6 +379,13 @@ class ControlledHockeyTeam extends HockeyTeam {
 		}
 
 		game.phaser.input.onDown.add(this.onMouseDown, this);
+
+		this.lineColor = color == TEAM_COLORS.red ? 0xFF0000 : 0x0000FF;
+	}
+
+	destroy() {
+		super.destroy();
+		this.ui.selectingLine.destroy();
 	}
 
 	update() {
@@ -410,8 +446,8 @@ class ControlledHockeyTeam extends HockeyTeam {
 	}
 
 	drawPlayerLine(p, target) {
-		this.ui.selectingLine.beginFill(0xFF0000, 0);
-		this.ui.selectingLine.lineStyle(10, 0xFF0000, 0.2);
+		this.ui.selectingLine.beginFill(this.lineColor, 0);
+		this.ui.selectingLine.lineStyle(10, this.lineColor, 0.2);
 
 		this.ui.selectingLine.moveTo(p.x, p.y);
 
@@ -426,8 +462,8 @@ class ControlledHockeyTeam extends HockeyTeam {
 		
 		this.ui.selectingLine.lineTo(points[0].x, points[0].y);
 		if (points.length > 1) {
-			this.ui.selectingLine.beginFill(0xFF0000, 0);
-			this.ui.selectingLine.lineStyle(10, 0xFF0000, 0.2);
+			this.ui.selectingLine.beginFill(this.lineColor, 0);
+			this.ui.selectingLine.lineStyle(10, this.lineColor, 0.2);
 			this.ui.selectingLine.moveTo(points[0].x, points[0].y);
 			this.ui.selectingLine.lineTo(points[1].x, points[1].y);
 			this.ui.selectingLine.endFill();
@@ -487,8 +523,14 @@ class HockeyPuck extends Movable {
 		this.sprite.pivot.set(0.5);
 		this.touchedLast = -1;
 	}
+
+	destroy() {
+		this.sprite.destroy();
+	}
 }
 
+
+//@HOCKEYPLAYER
 class HockeyPlayer extends Movable {
 	constructor(ordinal, color, side) {
 		super();
@@ -500,7 +542,7 @@ class HockeyPlayer extends Movable {
 
 		let y;
 		if (side == TEAM_SIDE.top) {
-			y = 750;
+			y = 450;
 			if (ordinal != 1) y += 50;
 		} else {
 			y = 950;
@@ -521,6 +563,11 @@ class HockeyPlayer extends Movable {
 		this.collidingWithPuck = false;
 	}
 
+	destroy() {
+		this.sprite.destroy();
+		this.shootRing.destroy();
+	}
+
 	reset() {
 		this.pendingMovement = null;
 		this.collidingWith = [];
@@ -535,9 +582,6 @@ class HockeyPlayer extends Movable {
 		this.sprite.bringToTop();
 	}
 
-	destroy() {
-		this.sprite.destroy();
-	}
 }
 
 class CameraGroup extends Phaser.Group {
@@ -561,6 +605,11 @@ class PlayController {
 		this.ui.fixedToCamera = true;
 		this.destroyables.push(this.ui);
 
+		this.gameData = {
+			redScore: 0,
+			blueScore: 0
+		};
+
 		this.blueScore = game.phaser.add.text(130, 35, "0", {
 			font: "60px slkscr",
 			fill: "#ffffff",
@@ -581,8 +630,6 @@ class PlayController {
 		this.redScore.anchor.set(0.5);
 		this.redScore.fixedToCamera = true;
 
-		this.hockeyGame = new HockeyGame();
-
 		this.submitBtn = game.phaser.add.sprite(400, 50, "submit-btn");
 		this.submitBtn.anchor.set(0.5);
 		this.submitBtn.fixedToCamera = true;
@@ -590,6 +637,27 @@ class PlayController {
 		this.submitBtn.events.onInputDown.add(() => {
 			this.hockeyGame.executeTurn();
 		}, this);
+
+		this.setupGame();
+	}
+
+	setupGame() {
+		if (!!this.hockeyGame) {
+			this.hockeyGame.destroy();
+		}
+		this.hockeyGame = new HockeyGame({
+			onScore: (team) => {
+				if (team == TEAM_COLORS.red) this.gameData.redScore++;
+				else if (team == TEAM_COLORS.blue) this.gameData.redScore++;
+				this.updateUi();
+				this.setupGame();
+			}
+		});
+	}
+
+	updateUi() {
+		this.redScore.text = this.gameData.redScore;
+		this.blueScore.text = this.gameData.blueScore;
 	}
 
 	update() {
