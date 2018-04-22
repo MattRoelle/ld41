@@ -1,31 +1,15 @@
 const SFX_TYPES = {
-	WALK: { 
-		key: "walk",
-		volume: 0.125
+	UNBELIEVABLE: { 
+		key: "unbelievable",
+		volume: 0.5
 	},
-	WALK2: { 
-		key: "walk2",
-		volume: 0.125
+	PUCK_HIT: { 
+		key: "puckhit",
+		volume: 0.5
 	},
-	JUMP: { 
-		key: "jump",
-		volume: 0.3
-	},
-	DEATH: { 
-		key: "death",
-		volume: 1
-	},
-	DEATH_EXPLOSION: { 
-		key: "deathexpl",
-		volume: 0.7
-	},
-	DOOR: { 
-		key: "door",
-		volume: 0.2
-	},
-	DOOR2: { 
-		key: "door2",
-		volume: 0.2
+	HIT1: { 
+		key: "hit1",
+		volume: 0.5
 	},
 };
  

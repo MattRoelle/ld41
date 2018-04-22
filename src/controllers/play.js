@@ -18,6 +18,8 @@ class PlayController {
 			blueScore: 0
 		};
 
+		this.globalUI = new GlobalUI();
+
 		this.timeLabel = game.phaser.add.text(318, 20, "time", {
 			font: "36px slkscr",
 			fill: "#33ff44",
@@ -75,6 +77,8 @@ class PlayController {
 			onScore: (team) => {
 				this.crowd.cheer();
 
+				game.audio.playSfx(SFX_TYPES.UNBELIEVABLE);
+
 				if (team == TEAM_COLORS.red) {
 					this.gameData.blueScore++;
 					this.opts.startingTeam = 0;
@@ -88,19 +92,21 @@ class PlayController {
 				const _this = this;
 				setTimeout(() => {
 					game.fadeOut(() => {
-						_this.setupGame();
+						if (_this.opts.turnsRemaining > 0) {
+							_this.setupGame();
+						}
 						game.fadeIn();
 
-						if (_this.opts.startingTeam == 0 && _this.params.players == 1 && _this.opts.turnsRemaining > 0) {
-							setTimeout(() => {
+						setTimeout(() => {
+							if (_this.opts.startingTeam == 0 && _this.params.players == 1 && _this.opts.turnsRemaining > 0) {
 								_this.hockeyGame.executeTurn();
-							}, 500);
-						}
+							}
+						}, 500);
 					});
 				}, 2500);
 			},
 			startingTeam: 1,
-			turnsRemaining: 3,
+			turnsRemaining: 10,
 			numPlayers: this.params.players
 		};
 
@@ -164,10 +170,10 @@ class PlayController {
 			}
 		}
 
-		if (game.input.up()) game.phaser.camera.y -= 14;
-		if (game.input.down()) game.phaser.camera.y += 10;
-		if (game.input.left()) game.phaser.camera.x -= 10;
-		if (game.input.right()) game.phaser.camera.x += 10;
+		if (game.input.up() || game.phaser.input.y < 15) game.phaser.camera.y -= 14;
+		if (game.input.down() || game.phaser.input.y > 585) game.phaser.camera.y += 10;
+		if (game.input.left() || game.phaser.input.x < 15) game.phaser.camera.x -= 10;
+		if (game.input.right() || game.phaser.input.x > 7850) game.phaser.camera.x += 10;
 	}
 
 	render() {
@@ -180,6 +186,7 @@ class PlayController {
 		this.submitBtn.bringToTop();
 		this.timeLabel.bringToTop();
 		this.timeText.bringToTop();
+		this.globalUI.bringToTop();
 	}
 
 	destroy() {
@@ -187,5 +194,6 @@ class PlayController {
 		if (!!this.hockeyGame) {
 			this.hockeyGame.destroy();
 		}
+		this.globalUI.destroy();
 	}
 }

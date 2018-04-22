@@ -23,6 +23,9 @@ class Loader {
 		g.load.image("2player", "assets/2player.png");
 		g.load.spritesheet("blueendturn", "assets/blueendturn.png", 340, 56);
 		g.load.spritesheet("redendturn", "assets/redendturn.png", 340, 56);
+		g.load.audio("unbelievable", ["assets/audio/pucking-unbelievable.wav"]);
+		g.load.audio("puckhit", ["assets/audio/puckhit.ogg"]);
+		g.load.audio("hit1", ["assets/audio/hit1.ogg"]);
 	}
 }
 

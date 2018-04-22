@@ -51,15 +51,19 @@ class TitleController {
 				players: 2,
 			});
 		});
+
+		this.globalUI = new GlobalUI();
 	}
 
 	update() {
 	}
 
 	render() {
+		this.globalUI.bringToTop();
 	}
 
 	destroy() {
 		for(let d of this.destroyables) d.destroy();
+		this.globalUI.destroy();
 	}
 }

@@ -14,6 +14,16 @@ class HockeyGame {
 			];
 		}
 
+		this.playerCollisionGroup = game.phaser.physics.p2.createCollisionGroup();
+		this.puckCollisionGroup = game.phaser.physics.p2.createCollisionGroup();
+		this.boundsCollisionGroup = game.phaser.physics.p2.createCollisionGroup();
+
+		for(let t of this.teams) {
+			for(let p of t.players) {
+				p.sprite.body.setCollisionGroup(this.playerCollisionGroup);
+			}
+		}
+
 		this.bounds = [];
 		for(let b of BOUNDS) {
 			const s = game.phaser.add.sprite(b.x, b.y, null);
@@ -22,10 +32,31 @@ class HockeyGame {
 			s.body.addRectangle(b.w, b.h);
 			s.body.rotation = b.r;
 			s.body.debug = DEBUG;
+			s.body.setCollisionGroup(this.boundsCollisionGroup);
 			this.bounds.push(s);
 		}
 
 		this.puck = new HockeyPuck(400, 700);
+		this.puck.sprite.body.setCollisionGroup(this.puckCollisionGroup);
+
+		this.puck.sprite.body.collides([ this.playerCollisionGroup, ], () => {
+			game.audio.playSfx(SFX_TYPES.PUCK_HIT);
+		}, this);
+		this.puck.sprite.body.collides([ this.boundsCollisionGroup ]);
+
+		for(let t of this.teams) {
+			for(let p of t.players) {
+				p.sprite.body.collides([ this.puckCollisionGroup, this.boundsCollisionGroup ]);
+				p.sprite.body.collides([ this.playerCollisionGroup ], () => {
+					game.audio.playSfx(SFX_TYPES.HIT1);
+				}, this);
+			}
+		}
+
+		for(let b of this.bounds) {
+			b.body.collides([ this.puckCollisionGroup, this.playerCollisionGroup ]);
+		}
+
 
 		this.executingTurn = false;
 		this.processingFight = false;
@@ -186,27 +217,11 @@ class HockeyGame {
 		for(let t of this.teams) {
 			for(let p of t.players) {
 				p.clampVelocity();
-				for(let b of this.bounds) {
-					game.phaser.physics.arcade.collide(p.sprite, b);
-					game.phaser.physics.arcade.collide(p.sprite, this.puck.sprite);
-				}
 			}
 			t.update();
 		}
 		this.puck.clampVelocity();
 
-		const allPlayers = this.teams[0].players.concat(this.teams[1].players);
-		for(let i = 0; i < allPlayers.length; i++) {
-			for(let j = 0; j < allPlayers.length; j++) {
-				if (i != j) {
-					game.phaser.physics.arcade.collide(allPlayers[i].sprite, allPlayers[j].sprite);
-				}
-			}
-		}
-
-		for(let b of this.bounds) {
-			game.phaser.physics.arcade.collide(this.puck.sprite, b);
-		}
 
 		if (this.executingTurn) {
 			this.checkEvents();

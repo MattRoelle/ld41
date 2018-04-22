@@ -60,6 +60,7 @@ class Game {
 	create() {
 		this.phaser.physics.startSystem(Phaser.Physics.P2JS);
 		this.phaser.physics.p2.world.defaultContactMaterial.restitution = 0.98;
+		this.phaser.physics.p2.setImpactEvents(true);
 		this.pixelateFilter = game.phaser.add.filter("Pixelate", 800, 600);
 		this.phaser.world.filters = [
 				this.pixelateFilter
@@ -68,7 +69,7 @@ class Game {
 
 		this.switchState(GAME_STATES.TITLE);
 		
-		this.audio.toggleMute();
+		//this.audio.toggleMute();
 
 		game.phaser.stage.backgroundColor = "#121212";
 	}
