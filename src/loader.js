@@ -23,6 +23,10 @@ class Loader {
 		g.load.image("2player", "assets/2player.png");
 		g.load.image("tutbutton", "assets/tutorialbtn.png");
 		g.load.image("tutorial", "assets/tutorial.png");
+		g.load.image("options", "assets/options.png");
+		g.load.image("checkbox-checked", "assets/checkbox-checked.png");
+		g.load.image("checkbox-unchecked", "assets/checkbox-un.png");
+		g.load.image("startbtn", "assets/startbtn.png");
 		g.load.spritesheet("blueendturn", "assets/blueendturn.png", 340, 56);
 		g.load.spritesheet("redendturn", "assets/redendturn.png", 340, 56);
 		g.load.audio("unbelievable", ["assets/audio/pucking-unbelievable.wav"]);

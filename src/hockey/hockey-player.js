@@ -1,21 +1,55 @@
 //@HOCKEYPLAYER
 class HockeyPlayer extends Movable {
-	constructor(ordinal, color, side) {
+	constructor(ordinal, color, side, hgame) {
 		super();
 
 		this.id = ++ID;
-		let x = 350 + (ordinal*50);
+
+		let x;
+		let y;
+
+		if (hgame.opts.teamSize == 1) {
+			x = 400;
+			if (side == TEAM_SIDE.top) {
+				y = 350;
+			} else {
+				y = 1050;
+			}
+		}
+
+		if (hgame.opts.teamSize == 2) {
+			x = 350 + (ordinal*100);
+			if (side == TEAM_SIDE.top) {
+				y = 350;
+			} else {
+				y = 1050;
+			}
+		}
+
+		if (hgame.opts.teamSize == 3) {
+			x = 350 + (ordinal*50);
+			if (side == TEAM_SIDE.top) {
+				y = 350;
+				if (ordinal != 1) y += 50;
+			} else {
+				y = 1050;
+				if (ordinal != 1) y -= 50;
+			}
+		}
+
+		if (hgame.opts.teamSize == 4) {
+			x = 300 + (ordinal*75);
+			if (side == TEAM_SIDE.top) {
+				y = 350;
+				if (ordinal != 1 && ordinal != 2) y += 50;
+			} else {
+				y = 1050;
+				if (ordinal != 1 && ordinal != 2) y -= 50;
+			}
+		}
 
 		this.ordinal = ordinal;
 
-		let y;
-		if (side == TEAM_SIDE.top) {
-			y = 350;
-			if (ordinal != 1) y += 50;
-		} else {
-			y = 1050;
-			if (ordinal != 1) y -= 50;
-		}
 
 		this.sprite = game.phaser.add.sprite(x, y, color == TEAM_COLORS.red ? "red-player" : "blue-player");
 		this.sprite.anchor.set(0.5);

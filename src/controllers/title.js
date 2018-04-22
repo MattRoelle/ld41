@@ -1,7 +1,11 @@
+// this is some of the worst ui code i've ever written
+
 class TitleController {
 	constructor(params) {
 		this.destroyables = [];
 		game.phaser.camera.setPosition(0, 0);
+
+		this.players = 1;
 
 		const rp = game.phaser.add.sprite(400, -1400, "rinkpreview");
 		this.destroyables.push(rp);
@@ -32,9 +36,9 @@ class TitleController {
 		}, 2000, Phaser.Easing.Quadratic.Out, true);
 		btn1player.inputEnabled = true;
 		btn1player.events.onInputDown.add(() => {
-			game.switchState(GAME_STATES.IN_GAME, {
-				players: 1,
-			});
+			if (this.optionsOpen) return;
+			this.players = 1;
+			this.openOptions();
 		});
 
 		const btn2player = game.phaser.add.sprite(400, 1400, "2player");
@@ -47,9 +51,9 @@ class TitleController {
 		}, 2000, Phaser.Easing.Quadratic.Out, true);
 		btn2player.inputEnabled = true;
 		btn2player.events.onInputDown.add(() => {
-			game.switchState(GAME_STATES.IN_GAME, {
-				players: 2,
-			});
+			if (this.optionsOpen) return;
+			this.players = 2;
+			this.openOptions();
 		});
 
 		const tutbutton = game.phaser.add.sprite(400, 1400, "tutbutton");
@@ -62,6 +66,7 @@ class TitleController {
 		}, 2000, Phaser.Easing.Quadratic.Out, true);
 		tutbutton.inputEnabled = true;
 		tutbutton.events.onInputDown.add(() => {
+			if (this.optionsOpen) return;
 			this.tutorial.position.y = 0;
 		});
 
@@ -71,8 +76,93 @@ class TitleController {
 		this.tutorial.events.onInputDown.add(() => {
 			this.tutorial.position.y = -600;
 		});
+		this.destroyables.push(this.tutorial);
 
 		this.globalUI = new GlobalUI();
+
+		this.optsGroup = game.phaser.add.group();
+		const optionsBg = game.phaser.add.sprite(0, 0, "options");
+		this.destroyables.push(optionsBg);
+		this.optsGroup.add(optionsBg);
+		const startBtn = game.phaser.add.sprite(300, 350, "startbtn");
+		this.optsGroup.add(startBtn);
+		this.destroyables.push(startBtn);
+
+		this.gameLength = 20;
+
+		this.t20Checkbox = this.addCheckbox(410, 170, this.optsGroup, () => {
+			this.gameLength = 20;
+			this.uncheckCheckbox(this.t40Checkbox);
+		});
+		this.checkCheckbox(this.t20Checkbox);
+
+		this.t40Checkbox = this.addCheckbox(410, 235, this.optsGroup, () => {
+			this.gameLength = 40;
+			this.uncheckCheckbox(this.t20Checkbox);
+		});
+
+
+		startBtn.anchor.set(0.5);
+		startBtn.inputEnabled = true;
+		startBtn.events.onInputDown.add(() => {
+			console.log(this.players);
+			game.switchState(GAME_STATES.IN_GAME, {
+				gameLength: this.gameLength,
+				players: this.players,
+				teamSize: this.ts
+			});
+		});
+
+		this.ts1cb = this.addCheckbox(30, 160, this.optsGroup, () => { this.ts = 1; this.uncheckAllBut(1); });
+		this.ts2cb = this.addCheckbox(30, 210, this.optsGroup, () => { this.ts = 2; this.uncheckAllBut(2); });
+		this.ts3cb = this.addCheckbox(130, 160, this.optsGroup, () => { this.ts = 3; this.uncheckAllBut(3); });
+		this.ts4cb = this.addCheckbox(130, 210, this.optsGroup, () => { this.ts = 4; this.uncheckAllBut(4); });
+		this.checkCheckbox(this.ts3cb);
+		this.ts = 3;
+
+		this.optsGroup.position.x = 100;
+		this.optsGroup.position.y = -3000;
+	}
+
+	uncheckAllBut(n) {
+		if (n != 1) this.uncheckCheckbox(this.ts1cb);
+		if (n != 2) this.uncheckCheckbox(this.ts2cb);
+		if (n != 3) this.uncheckCheckbox(this.ts3cb);
+		if (n != 4) this.uncheckCheckbox(this.ts4cb);
+	}
+
+	closeOptions() {
+		if (!this.optionsOpen) return;
+		this.optionsOpen = false;
+		this.this.optsGroup.position.y = -3000;
+	}
+
+	openOptions() {
+		if (this.optionsOpen) return;
+		this.optionsOpen = true;
+		this.optsGroup.position.y = 100;
+	}
+
+	addCheckbox(x, y, group, onClick) {
+		const cb = game.phaser.add.sprite(x, y, "checkbox-unchecked");
+		group.add(cb);
+		cb.bringToTop()
+		group.bringToTop(cb);
+		cb.inputEnabled = true;
+		cb.events.onInputDown.add(() => {
+			this.checkCheckbox(cb);
+			onClick();
+		}, this);
+		this.destroyables.push(cb);
+		return cb;
+	}
+
+	checkCheckbox(cb) {
+		cb.loadTexture("checkbox-checked");
+	}
+
+	uncheckCheckbox(cb) {
+		cb.loadTexture("checkbox-unchecked");
 	}
 
 	update() {

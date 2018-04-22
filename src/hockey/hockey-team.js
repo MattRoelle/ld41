@@ -5,11 +5,10 @@ class HockeyTeam {
 		this.hgame = hgame;
 		this.teamIndex = idx;
 
-		this.players = [
-			new HockeyPlayer(0, color, side),
-			new HockeyPlayer(1, color, side),
-			new HockeyPlayer(2, color, side),
-		];
+		this.players = [];
+		for(let i = 0; i < hgame.opts.teamSize; i++) {
+			this.players.push(new HockeyPlayer(i, color, side, hgame));
+		}
 	}
 
 	limitTarget(targetPos, origin, upper) {
@@ -59,7 +58,7 @@ class ControlledHockeyTeam extends HockeyTeam {
 		for(let p of this.players) {
 			p.sprite.inputEnabled = true;
 			p.sprite.events.onInputDown.add(() => {
-				if (!this.selectingMovement && !this.hgame.executingTurn && (this.hgame.currentTeamsTurn == this.teamIndex)) {
+				if (!this.selectingMovement && !this.hgame.executingTurn&& !this.hgame.ended  && (this.hgame.currentTeamsTurn == this.teamIndex)) {
 					if (p.pendingMovement != null) {
 						p.pendingMovement = null;
 					} else {

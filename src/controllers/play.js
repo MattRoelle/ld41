@@ -106,8 +106,9 @@ class PlayController {
 				}, 2500);
 			},
 			startingTeam: 1,
-			turnsRemaining: 10,
-			numPlayers: this.params.players
+			turnsRemaining: params.gameLength,
+			numPlayers: this.params.players,
+			teamSize: this.params.teamSize
 		};
 
 		this.setupGame();
@@ -132,7 +133,10 @@ class PlayController {
 	end() {
 		if (this.ended) return;
 		this.ended = true;
+		this.hockeyGame.ended = true;
 		
+		this.crowd.cheer();
+
 		if (this.gameData.redScore > this.gameData.blueScore) {
 			game.effects.announcement("RED TEAM WINS", "#ff0000");
 		} else if (this.gameData.blueScore > this.gameData.redScore) {
@@ -143,7 +147,7 @@ class PlayController {
 
 		setTimeout(() => {
 			game.switchState(GAME_STATES.TITLE);
-		}, 2000);
+		}, 4000);
 	}
 
 	update() {
@@ -165,7 +169,7 @@ class PlayController {
 					const _this = this;
 					setTimeout(() => {
 						_this.hockeyGame.executeTurn();
-					}, 500);
+					}, 1000);
 				}
 			}
 		}
