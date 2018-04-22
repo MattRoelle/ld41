@@ -2,8 +2,8 @@ class HockeyGame {
 	constructor(opts) {
 		this.opts = opts;
 		this.teams = [
-			//new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this),
-			new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
+			new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
+			//new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
 			new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this, 1)
 		];
 
@@ -24,7 +24,8 @@ class HockeyGame {
 		this.processingFight = false;
 		this.turnEvents = [];
 		this.nFights = 0;
-		this.currentTeamsTurn = 0;
+		this.currentTeamsTurn = opts.startingTeam;
+		this.scored = false;
 	}
 
 	destroy() {
@@ -67,6 +68,8 @@ class HockeyGame {
 		_this.executingTurn = false;
 		_this.processingFight = false
 		_this.currentTeamsTurn = (_this.currentTeamsTurn + 1) % 2;
+		_this.opts.turnsRemaining--;
+		console.log(_this.opts.turnsRemaining);
 	}
 
 	processFight(p) {
@@ -127,10 +130,16 @@ class HockeyGame {
 	checkEvents() {
 		const allPlayers = this.teams[0].players.concat(this.teams[1].players);
 
-		if (this.puck.sprite.position.y > 1110) {
-			this.opts.onScore(TEAM_COLORS.blue);
-		} else if (this.puck.sprite.position.y < 290) {
-			this.opts.onScore(TEAM_COLORS.red);
+		if (!this.scored) {
+			if (this.puck.sprite.position.y > 1110) {
+				this.scored = true;
+				this.opts.turnsRemaining--;
+				this.opts.onScore(TEAM_COLORS.blue);
+			} else if (this.puck.sprite.position.y < 290) {
+				this.scored = true;
+				this.opts.turnsRemaining--;
+				this.opts.onScore(TEAM_COLORS.red);
+			}
 		}
 	}
 

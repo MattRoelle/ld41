@@ -15,6 +15,8 @@ class Loader {
 		g.load.image("blueshootring", "assets/blueshootring.png");
 		g.load.image("bluefan", "assets/bluefan.png");
 		g.load.image("redfan", "assets/redfan.png");
+		g.load.spritesheet("blueendturn", "assets/blueendturn.png", 340, 56);
+		g.load.spritesheet("redendturn", "assets/redendturn.png", 340, 56);
 	}
 }
 
