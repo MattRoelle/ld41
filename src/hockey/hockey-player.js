@@ -4,7 +4,7 @@ class HockeyPlayer extends Movable {
 		super();
 
 		this.id = ++ID;
-		let x = 200 + (ordinal*200);
+		let x = 205 + (ordinal*200);
 
 		this.ordinal = ordinal;
 
@@ -21,6 +21,13 @@ class HockeyPlayer extends Movable {
 		this.sprite.anchor.set(0.5);
 		this.sprite.pivot.set(0.5);
 		this.sprite.bringToTop();
+		game.phaser.physics.enable([this.sprite], Phaser.Physics.ARCADE);
+		this.sprite.body.setCircle(16);
+		this.sprite.body.velocity.set(0);
+		this.sprite.body.drag.set(100, 100);
+		this.sprite.body.bounce.set(1, 1);
+		this.sprite.body.allowGravity = false;
+		this.sprite.body.allowRotation = false;
 
 		this.shootRing = game.phaser.add.sprite(x, y, color == TEAM_COLORS.red ? "redshootring" : "blueshootring");
 		this.shootRing.anchor.set(0.5);
@@ -41,6 +48,8 @@ class HockeyPlayer extends Movable {
 		this.collidingWith = [];
 		this.fightProcessed = false;
 		this.movementCancelled = false;
+		this.inFight = false;
+		this.inPuckFight = false;
 	}
 
 	render() {
@@ -48,6 +57,8 @@ class HockeyPlayer extends Movable {
 		this.shootRing.position.x = this.sprite.position.x;
 		this.shootRing.position.y = this.sprite.position.y;
 		this.sprite.bringToTop();
+
+		if (DEBUG) game.phaser.debug.body(this.sprite);
 	}
 
 }

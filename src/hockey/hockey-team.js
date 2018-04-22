@@ -51,6 +51,7 @@ class ControlledHockeyTeam extends HockeyTeam {
 		this.selectingMovement = false;
 		this.selectingShot = false;
 		this.playerTarget = null;
+		this.hgame = hgame;
 
 		this.ui = {};
 		this.ui.selectingLine = game.phaser.add.graphics();
@@ -58,7 +59,7 @@ class ControlledHockeyTeam extends HockeyTeam {
 		for(let p of this.players) {
 			p.sprite.inputEnabled = true;
 			p.sprite.events.onInputDown.add(() => {
-				if (!this.selectingMovement) {
+				if (!this.selectingMovement && !this.hgame.executingTurn) {
 					p.pendingMovement = null;
 					this.selectingMovement = true;
 					this.playerTarget = p;
@@ -81,10 +82,11 @@ class ControlledHockeyTeam extends HockeyTeam {
 
 	onMouseDown() {
 		if (this.selectingMovement) {
+			const range = this.playerTarget.collidingWithPuck ? C.MAX_SHOT_RANGE : C.MAX_MOVEMENT;
 			this.playerTarget.pendingMovement = this.limitTarget({
 				x: game.phaser.input.x + game.phaser.camera.x,
 				y: game.phaser.input.y + game.phaser.camera.y
-			}, this.playerTarget.sprite);
+			}, this.playerTarget.sprite, range);
 			this.selectingMovement = false;
 		}
 	}

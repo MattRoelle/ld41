@@ -4,12 +4,42 @@ const GOAL_1 = { x: 400, y: 190 };
 const GOAL_2 = { x: 400, y: 1210 };
 
 const BOUNDS = [
-	[	[101, 0], [100, 1600] ],
-	[	[701, -0], [700, 1600] ]
+	{
+		x: 0,
+		y: 0,
+		w: 108,
+		h: 1600
+	},
+	{
+		x: 692,
+		y: 0,
+		w: 108,
+		h: 1600
+	},
+	{
+		x: 108,
+		y: 0,
+		w: 692 - 108,
+		h: 108
+	},
+	{
+		x: 108,
+		y: 1300,
+		w: 692 - 108,
+		h: 108
+	},
 ];
 
 function castLineOnField(sx, sy, fx, fy) {
-	const ret = [];
+	const ret = [
+		{
+			x: fx,
+			y: fy,
+			t: 1
+		}
+	];
+
+	return ret;
 
 	let intersection = null;
 	let bi = null;
