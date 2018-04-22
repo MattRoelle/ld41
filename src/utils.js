@@ -16,4 +16,7 @@ class Utils {
 		return `${minutes}:${seconds}:${subseconds}`;
 	}
 
+	magnitude(p) {
+		return this.dist(p.x, p.y, 0, 0);
+	}
 }

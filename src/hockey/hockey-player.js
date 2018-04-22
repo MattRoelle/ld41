@@ -21,13 +21,11 @@ class HockeyPlayer extends Movable {
 		this.sprite.anchor.set(0.5);
 		this.sprite.pivot.set(0.5);
 		this.sprite.bringToTop();
-		game.phaser.physics.enable([this.sprite], Phaser.Physics.ARCADE);
-		this.sprite.body.setSize(30, 30, 2, 2);
-		this.sprite.body.velocity.set(0);
-		this.sprite.body.drag.set(100, 100);
-		this.sprite.body.bounce.set(1, 1);
-		this.sprite.body.allowGravity = false;
-		this.sprite.body.allowRotation = false;
+		game.phaser.physics.p2.enable([this.sprite], Phaser.Physics.ARCADE);
+		this.sprite.body.setCircle(18);
+		this.sprite.body.restitution = 0.8;
+		this.sprite.body.damping = 0.75;
+		this.sprite.body.debug = DEBUG;
 
 		this.shootRing = game.phaser.add.sprite(x, y, color == TEAM_COLORS.red ? "redshootring" : "blueshootring");
 		this.shootRing.anchor.set(0.5);
