@@ -26,6 +26,7 @@ class HockeyGame {
 		this.nFights = 0;
 		this.currentTeamsTurn = opts.startingTeam;
 		this.scored = false;
+		game.phaser.camera.unfollow();
 	}
 
 	destroy() {
@@ -43,6 +44,8 @@ class HockeyGame {
 
 		this.tstart = game.phaser.time.now;
 
+		game.phaser.camera.follow(this.puck.sprite, null, 0.075, 0.075);
+
 		const t = this.teams[this.currentTeamsTurn];
 		t.preExecuteTurn();
 		t.executeTurn();
@@ -56,6 +59,8 @@ class HockeyGame {
 
 	endTurn() {
 		const _this = this;
+
+		game.phaser.camera.unfollow();
 
 		for(let t of this.teams) {
 			for(let p of t.players) {

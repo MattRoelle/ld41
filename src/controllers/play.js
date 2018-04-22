@@ -82,7 +82,7 @@ class PlayController {
 				this.updateUi();
 				this.setupGame();
 			},
-			startingTeam: 0,
+			startingTeam: 1,
 			turnsRemaining: 10
 		};
 
@@ -114,6 +114,12 @@ class PlayController {
 				this.submitBtn.loadTexture("blueendturn", 0);
 			} else {
 				this.submitBtn.loadTexture("redendturn", 0);
+				if (this.hockeyGame.teams[0].constructor === AIHockeyTeam) {
+					const _this = this;
+					setTimeout(() => {
+						_this.hockeyGame.executeTurn();
+					}, 500);
+				}
 			}
 		}
 
