@@ -2,7 +2,9 @@
 class PlayController {
 	constructor(params) {
 		this.destroyables = [];
+		this.topRink = game.phaser.add.sprite(-100, 0, "rinktop");
 		this.destroyables.push(game.phaser.add.sprite(-100, 0, "rink"));
+		this.destroyables.push(this.topRink);
 		game.phaser.world.setBounds(-100, -50, 1000, 1400);
 		game.phaser.camera.y = 600;
 
@@ -75,6 +77,7 @@ class PlayController {
 
 	render() {
 		this.hockeyGame.render();
+		this.topRink.bringToTop();
 		this.ui.bringToTop();
 		this.blueScore.bringToTop();
 		this.redScore.bringToTop();

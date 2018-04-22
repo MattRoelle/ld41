@@ -22,9 +22,9 @@ class HockeyPlayer extends Movable {
 		this.sprite.pivot.set(0.5);
 		this.sprite.bringToTop();
 		game.phaser.physics.p2.enable([this.sprite], Phaser.Physics.ARCADE);
-		this.sprite.body.setCircle(18);
-		this.sprite.body.restitution = 0.8;
-		this.sprite.body.damping = 0.75;
+		this.sprite.body.setCircle(18, -2, -2);
+		this.sprite.body.damping = 0.55;
+		this.sprite.body.fixedRotation = true;
 		this.sprite.body.debug = DEBUG;
 
 		this.shootRing = game.phaser.add.sprite(x, y, color == TEAM_COLORS.red ? "redshootring" : "blueshootring");
@@ -51,6 +51,9 @@ class HockeyPlayer extends Movable {
 	}
 
 	render() {
+		if (game.utils.magnitude(this.sprite.body.velocity) > 1) {
+			this.sprite.angle = (Math.atan2(this.sprite.body.velocity.y, this.sprite.body.velocity.x)*180/Math.PI) + 90;
+		}
 		this.shootRing.angle += 1;
 		this.shootRing.position.x = this.sprite.position.x;
 		this.shootRing.position.y = this.sprite.position.y;

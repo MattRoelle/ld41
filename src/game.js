@@ -58,7 +58,7 @@ class Game {
 
 	create() {
 		this.phaser.physics.startSystem(Phaser.Physics.P2JS);
-		this.phaser.physics.p2.world.defaultContactMaterial.restitution = 0.7;
+		this.phaser.physics.p2.world.defaultContactMaterial.restitution = 0.9;
 		this.input.init();
 
 		this.switchState(GAME_STATES.IN_GAME);

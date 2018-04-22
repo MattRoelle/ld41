@@ -8,8 +8,7 @@ class Movable {
 		const fy = position.y;
 
 		const theta = Math.atan2(sy - fy, sx - fx) + Math.PI;
-		let force = game.utils.dist(sx, sy, fx, fy)*4;
-		force = Math.max(110, force);
+		let force = game.utils.dist(sx, sy, fx, fy)*8;
 		console.log(force);
 
 		this.sprite.body.velocity.x += Math.cos(theta)*force;
@@ -24,7 +23,7 @@ class Movable {
 
 	clampVelocity() { 
 		const m = game.utils.magnitude(this.sprite.body.velocity);
-		if (m < 20) {
+		if (m < 25) {
 			this.sprite.body.setZeroVelocity();
 		}
 	}

@@ -8,7 +8,6 @@ class HockeyGame {
 		];
 
 		this.bounds = [];
-		this.plyrOnlyBounds = [];
 		for(let b of BOUNDS) {
 			const s = game.phaser.add.sprite(b.x, b.y, null);
 			game.phaser.physics.enable([s], Phaser.Physics.P2JS);
@@ -17,16 +16,6 @@ class HockeyGame {
 			s.body.rotation = b.r;
 			s.body.debug = DEBUG;
 			this.bounds.push(s);
-		}
-
-		for(let b of PLYR_ONLY_BOUNDS) {
-			const s = game.phaser.add.sprite(b.x, b.y, null);
-			game.phaser.physics.enable([s], Phaser.Physics.P2JS);
-			s.body.static = true;
-			s.body.addRectangle(b.w, b.h);
-			s.body.rotation = b.r;
-			s.body.debug = DEBUG;
-			this.plyrOnlyBounds.push(s);
 		}
 
 		this.puck = new HockeyPuck(400, 700);
@@ -137,15 +126,10 @@ class HockeyGame {
 	checkEvents() {
 		const allPlayers = this.teams[0].players.concat(this.teams[1].players);
 
-		// @SCORING
-		if (game.utils.magnitude(this.puck.sprite.body.velocity) < 2) {
-			if (game.utils.dist(this.puck.sprite.position.x, this.puck.sprite.position.y, GOAL_1.x, GOAL_1.y) < C.GOAL_RADIUS) {
-				// blue team scores
-				this.opts.onScore(TEAM_COLORS.red);
-			} else if (game.utils.dist(this.puck.sprite.position.x, this.puck.sprite.position.y, GOAL_2.x, GOAL_2.y) < C.GOAL_RADIUS) {
-				// red team scores
-				this.opts.onScore(TEAM_COLORS.blue);
-			}
+		if (this.puck.sprite.position.y > 1110) {
+			this.opts.onScore(TEAM_COLORS.blue);
+		} else if (this.puck.sprite.position.y < 290) {
+			this.opts.onScore(TEAM_COLORS.red);
 		}
 	}
 
@@ -158,9 +142,6 @@ class HockeyGame {
 				for(let b of this.bounds) {
 					game.phaser.physics.arcade.collide(p.sprite, b);
 					game.phaser.physics.arcade.collide(p.sprite, this.puck.sprite);
-				}
-				for(let b of this.plyrOnlyBounds) {
-					game.phaser.physics.arcade.collide(p.sprite, b);
 				}
 			}
 			t.update();
