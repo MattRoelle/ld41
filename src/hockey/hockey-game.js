@@ -26,6 +26,7 @@ class HockeyGame {
 	}
 
 	destroy() {
+		this.destroyed = true;
 		this.puck.destroy();
 		for(let b of this.bounds) b.destroy();
 		for(let t of this.teams) {
@@ -42,13 +43,15 @@ class HockeyGame {
 		for(let t of this.teams) {
 			t.executeTurn();
 			for(let p of t.players) {
-				if (!!p.pendingMovement) {
-					if (p.collidingWithPuck) {
+				if (p.collidingWithPuck) {
+					if (!!p.pendingMovement) {
 						this.puck.moveTo(p.pendingMovement, C.TURN_SPEED);
 						this.puck.touchedLast = p.id;
 						p.collidingWithPuck = false;
-						game.phaser.add.tween(p.shootRing.scale).to({x: 0, y: 0}, 1000, Phaser.Easing.Quadratic.InOut, true);
-					} else {
+					}
+					game.phaser.add.tween(p.shootRing.scale).to({x: 0, y: 0}, 1000, Phaser.Easing.Quadratic.InOut, true);
+				} else {
+					if (!!p.pendingMovement) {
 						p.moveTo(p.pendingMovement, C.TURN_SPEED);
 					}
 				}
@@ -79,12 +82,37 @@ class HockeyGame {
 
 		for(let t of _this.teams) {
 			for(let p of t.players) {
+				p.inFight = false;
+				p.inPuckFight = false;
+				p.collidingWith = [];
+			}
+		}
+
+		this.checkEvents();
+
+		let fightOccured = false;
+
+		for(let t of this.teams) {
+			for(let p of t.players) {
+				if (p.sprite.body.velocity.getMagnitude() > 1) allVelocityDone = false;
+				if (p.collidingWith.length > 0) {
+					fightOccured = true;
+					this.processFight(p);
+				}
+			}
+		}
+
+		if (fightOccured) return;
+
+		for(let t of this.teams) {
+			for(let p of t.players) {
 				if (p.collidingWithPuck) {
 					game.phaser.add.tween(p.shootRing.scale).to({x: 1, y: 1}, 1000, Phaser.Easing.Quadratic.InOut, true);
 				}
 				p.reset();
 			}
 		}
+
 		_this.executingTurn = false;
 		_this.puck.touchedLast = -1;
 		_this.processingFight = false
@@ -94,7 +122,7 @@ class HockeyGame {
 		const playersInFight = [];
 		this.walkFightList(p, playersInFight);
 
-		if (playersInFight.length > 0) {
+		if (playersInFight.length > 1) {
 			this.nFights++;
 			game.effects.fightAnim(playersInFight[0].sprite.x, playersInFight[0].sprite.y);
 
@@ -117,6 +145,11 @@ class HockeyGame {
 						p.collidingWithPuck = false;
 
 						p.moveTo(newPosition, C.FIGHT_SPEED, true);
+
+						setTimeout(() => {
+							p.collidingWith = [];
+							p.inFight = false;
+						}, 250);
 					}
 				}
 
@@ -129,6 +162,11 @@ class HockeyGame {
 				if (anyTouchPuck || winp.collidingWithPuck) {
 					this.puck.touchedLast = winp.id;
 				}
+
+				setTimeout(() => {
+					winp.collidingWith = [];
+					winp.inFight = false;
+				}, 250);
 			}, C.PREFIGHT_SPEED);
 		}
 	}
@@ -160,7 +198,7 @@ class HockeyGame {
 						if (!p2.collidingWith.find(p => p.id == p1.id)) { p2.collidingWith.push(p1); anyCollision = true; }
 
 						if (anyCollision) {
-							game.effects.fightRing(p1.sprite.position.x, p1.sprite.position.y);
+							//game.effects.fightRing(p1.sprite.position.x, p1.sprite.position.y);
 						}
 					}
 				}
@@ -180,7 +218,6 @@ class HockeyGame {
 		}
 
 		// @SCORING
-		
 		if (this.puck.sprite.body.velocity.getMagnitude() < 2) {
 			if (game.utils.dist(this.puck.sprite.position.x, this.puck.sprite.position.y, GOAL_1.x, GOAL_1.y) < C.GOAL_RADIUS) {
 				// blue team scores
@@ -208,6 +245,7 @@ class HockeyGame {
 
 		if (this.executingTurn) {
 			this.checkEvents();
+			if (this.destroyed) return;
 
 			let fightOccured = false;
 

@@ -22,7 +22,7 @@ class HockeyPlayer extends Movable {
 		this.sprite.pivot.set(0.5);
 		this.sprite.bringToTop();
 		game.phaser.physics.enable([this.sprite], Phaser.Physics.ARCADE);
-		this.sprite.body.setCircle(16);
+		this.sprite.body.setSize(30, 30, 2, 2);
 		this.sprite.body.velocity.set(0);
 		this.sprite.body.drag.set(100, 100);
 		this.sprite.body.bounce.set(1, 1);

@@ -8,7 +8,9 @@ class Movable {
 		const fy = position.y;
 
 		const theta = Math.atan2(sy - fy, sx - fx) + Math.PI;
-		const force = game.utils.dist(sx, sy, fx, fy)*1.5;
+		let force = game.utils.dist(sx, sy, fx, fy)*1.75;
+		force = Math.max(110, force);
+		console.log(force);
 
 		this.sprite.body.velocity.x += Math.cos(theta)*force;
 		this.sprite.body.velocity.y += Math.sin(theta)*force;

@@ -9,7 +9,7 @@ class HockeyPuck extends Movable {
 		this.sprite.body.allowGravity = false;
 		this.sprite.body.bounce.set(1);
 		this.sprite.body.drag.set(100);
-		this.sprite.body.setCircle(8);
+		this.sprite.body.setSize(12, 12, 2, 2);
 	}
 
 	render() {
