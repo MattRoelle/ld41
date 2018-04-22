@@ -4,7 +4,7 @@ class HockeyPlayer extends Movable {
 		super();
 
 		this.id = ++ID;
-		let x = 205 + (ordinal*200);
+		let x = 350 + (ordinal*50);
 
 		this.ordinal = ordinal;
 

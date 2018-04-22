@@ -4,6 +4,7 @@ const GAME_STATES = {
 };
 
 const controllerCtorLookup = {
+	[GAME_STATES.TITLE]: TitleController,
 	[GAME_STATES.IN_GAME]: PlayController,
 };
 
@@ -59,9 +60,13 @@ class Game {
 	create() {
 		this.phaser.physics.startSystem(Phaser.Physics.P2JS);
 		this.phaser.physics.p2.world.defaultContactMaterial.restitution = 0.98;
+		this.pixelateFilter = game.phaser.add.filter("Pixelate", 800, 600);
+		this.phaser.world.filters = [
+				this.pixelateFilter
+		];
 		this.input.init();
 
-		this.switchState(GAME_STATES.IN_GAME);
+		this.switchState(GAME_STATES.TITLE);
 		
 		this.audio.toggleMute();
 
@@ -69,14 +74,13 @@ class Game {
 	}
 
 	fadeOut(cb) {
-		//const t = this.phaser.add.tween(this.pixelateFilter).to( { sizeX: 20, sizeY: 20 }, 400, "Quad.easeInOut", true, 0);
-		//if (!!cb) t.onComplete.add(cb);
-		if (!!cb) cb();
+		const t = this.phaser.add.tween(this.pixelateFilter).to( { sizeX: 20, sizeY: 20 }, 400, "Quad.easeInOut", true, 0);
+		if (!!cb) t.onComplete.add(cb);
 	}
 
 	fadeIn(cb) {
-		//const t = this.phaser.add.tween(this.pixelateFilter).to( { sizeX: 1, sizeY: 1 }, 400, "Quad.easeInOut", true, 0);
-		//if (!!cb) t.onComplete.add(cb);
+		const t = this.phaser.add.tween(this.pixelateFilter).to( { sizeX: 1, sizeY: 1 }, 400, "Quad.easeInOut", true, 0);
+		if (!!cb) t.onComplete.add(cb);
 		if (!!cb) cb();
 	}
 

@@ -2,6 +2,7 @@ class Effects {
 	constructor() {
 		this.fightAnims = [];
 		this.ring = null;
+		this.top = [];
 	}
 
 	render() {
@@ -11,6 +12,7 @@ class Effects {
 				fa.angle += fa.rotationSpeed;
 			}
 		}
+		for(let t of this.top) t.bringToTop();
 	}
 
 	fightAnim(x, y) {
@@ -64,6 +66,59 @@ class Effects {
 				alpha: 0
 			}, 500, Phaser.Easing.Quadratic.Out, true);
 		}, 1000);
+	}
+
+	winStripes(side) {
+		for(let i = 0; i < 40; i++) {
+			const s = game.phaser.add.sprite(400, side == "red" ? 50 : 1350, (side == "red" ? "blue" : "red") + "winstripe"); // hacks
+			s.anchor.set(0.5);
+			s.pivot.set(0.5);
+			setTimeout(() => {
+				const tw = game.phaser.add.tween(s.position)
+				.to({
+					y: (side == "red" ? 1400 : 0) + (Math.random() - 0.5)*150
+				}, 1500 + (Math.random()*300), Phaser.Easing.Quadratic.Out, true);
+
+				const tw2 = game.phaser.add.tween(s)
+				.to({
+					alpha: 0
+				}, 1000, Phaser.Easing.Quadratic.Out, true);
+			}, (Math.random()*700));
+		}
+	}
+
+	announcement(t, color) {
+		const text = game.phaser.add.text(400, 300, t, {
+			font: "90px slkscr",
+			fill: color,
+			stroke: "#000000",
+			strokeThickness: 6,
+			align: "center",
+			wordWrap: true,
+			wordWrapWidth: 600
+		});
+		text.anchor.set(0.5);
+		text.pivot.set(0.5);
+		text.fixedToCamera = true;
+		text.scale.set(0);
+		text.angle = 80;
+		const tw = game.phaser.add.tween(text.scale)
+		.to({
+			x: 1,
+			y: 1
+		}, 800, Phaser.Easing.Bounce.Out, true);
+		const tw2 = game.phaser.add.tween(text)
+		.to({
+			angle: 0
+		}, 800, Phaser.Easing.Bounce.Out, true);
+		this.top.push(text);
+
+		setTimeout(() => {
+			const tw2 = game.phaser.add.tween(text)
+			.to({
+				alpha: 0
+			}, 800, Phaser.Easing.Quadratic.Out, true);
+		}, 1100);
 	}
 }
 

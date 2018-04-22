@@ -67,4 +67,8 @@ class Crowd {
 		this.cheering = true;
 		this.cheerStart = game.phaser.time.now;
 	}
+
+	destroy() {
+		for(let fan of this.fans) fan.destroy();
+	}
 }

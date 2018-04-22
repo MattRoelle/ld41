@@ -1,11 +1,18 @@
 class HockeyGame {
 	constructor(opts) {
 		this.opts = opts;
-		this.teams = [
-			new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
-			//new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
-			new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this, 1)
-		];
+
+		if (opts.numPlayers == 1) {
+			this.teams = [
+				new AIHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
+				new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this, 1)
+			];
+		} else {
+			this.teams = [
+				new ControlledHockeyTeam(TEAM_COLORS.red, TEAM_SIDE.top, this, 0),
+				new ControlledHockeyTeam(TEAM_COLORS.blue, TEAM_SIDE.bottom, this, 1)
+			];
+		}
 
 		this.bounds = [];
 		for(let b of BOUNDS) {
@@ -27,6 +34,16 @@ class HockeyGame {
 		this.currentTeamsTurn = opts.startingTeam;
 		this.scored = false;
 		game.phaser.camera.unfollow();
+
+		setTimeout(() => {
+			if (this.opts.turnsRemaining > 0) {
+				if (this.currentTeamsTurn == 1) {
+					game.effects.announcement("BLUE TURN", "#0000ff");
+				} else {
+					game.effects.announcement("RED TURN", "#ff0000");
+				}
+			}
+		}, 500);
 	}
 
 	destroy() {
@@ -39,7 +56,7 @@ class HockeyGame {
 	}
 
 	executeTurn() {
-		if (this.executingTurn) return;
+		if (this.executingTurn || this.opts.turnsRemaining <= 0) return;
 		this.executingTurn = true;
 
 		this.tstart = game.phaser.time.now;
@@ -74,7 +91,14 @@ class HockeyGame {
 		_this.processingFight = false
 		_this.currentTeamsTurn = (_this.currentTeamsTurn + 1) % 2;
 		_this.opts.turnsRemaining--;
-		console.log(_this.opts.turnsRemaining);
+
+		if (!this.scored && this.opts.turnsRemaining > 0) {
+			if (_this.currentTeamsTurn == 1) {
+				game.effects.announcement("BLUE TURN", "#0000ff");
+			} else {
+				game.effects.announcement("RED TURN", "#ff0000");
+			}
+		}
 	}
 
 	processFight(p) {
@@ -137,13 +161,21 @@ class HockeyGame {
 
 		if (!this.scored) {
 			if (this.puck.sprite.position.y > 1110) {
+				game.effects.announcement("RED TEAM SCORES", "#ff0000");
+				this.puck.sprite.alpha = 0;
 				this.scored = true;
 				this.opts.turnsRemaining--;
 				this.opts.onScore(TEAM_COLORS.blue);
+				game.effects.winStripes("blue");
+				game.phaser.camera.shake(0.01, 400);
 			} else if (this.puck.sprite.position.y < 290) {
+				game.effects.announcement("BLUE TEAM SCORES", "#0000ff");
+				this.puck.sprite.alpha = 0;
 				this.scored = true;
 				this.opts.turnsRemaining--;
 				this.opts.onScore(TEAM_COLORS.red);
+				game.effects.winStripes("red");
+				game.phaser.camera.shake(0.01, 400);
 			}
 		}
 	}

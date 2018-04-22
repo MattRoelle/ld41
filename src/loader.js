@@ -15,6 +15,12 @@ class Loader {
 		g.load.image("blueshootring", "assets/blueshootring.png");
 		g.load.image("bluefan", "assets/bluefan.png");
 		g.load.image("redfan", "assets/redfan.png");
+		g.load.image("redwinstripe", "assets/redwinstripe.png");
+		g.load.image("bluewinstripe", "assets/bluewinstripe.png");
+		g.load.image("rinkpreview", "assets/rinkpreview.png");
+		g.load.image("title", "assets/title.png");
+		g.load.image("1player", "assets/1player.png");
+		g.load.image("2player", "assets/2player.png");
 		g.load.spritesheet("blueendturn", "assets/blueendturn.png", 340, 56);
 		g.load.spritesheet("redendturn", "assets/redendturn.png", 340, 56);
 	}
