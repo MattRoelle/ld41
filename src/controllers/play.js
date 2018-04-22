@@ -46,6 +46,7 @@ class PlayController {
 		}, this);
 
 		this.setupGame();
+		this.crowd = new Crowd();
 	}
 
 	setupGame() {
@@ -54,6 +55,7 @@ class PlayController {
 		}
 		this.hockeyGame = new HockeyGame({
 			onScore: (team) => {
+				this.crowd.cheer();
 				if (team == TEAM_COLORS.red) this.gameData.redScore++;
 				else if (team == TEAM_COLORS.blue) this.gameData.redScore++;
 				this.updateUi();
@@ -78,6 +80,7 @@ class PlayController {
 	render() {
 		this.hockeyGame.render();
 		this.topRink.bringToTop();
+		this.crowd.render();
 		this.ui.bringToTop();
 		this.blueScore.bringToTop();
 		this.redScore.bringToTop();

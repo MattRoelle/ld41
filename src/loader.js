@@ -13,6 +13,8 @@ class Loader {
 		g.load.image("yellowring", "assets/yellowring.png");
 		g.load.image("redshootring", "assets/redshootring.png");
 		g.load.image("blueshootring", "assets/blueshootring.png");
+		g.load.image("bluefan", "assets/bluefan.png");
+		g.load.image("redfan", "assets/redfan.png");
 	}
 }
 
