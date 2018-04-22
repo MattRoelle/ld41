@@ -28,7 +28,7 @@ class TitleController {
 		game.phaser.add.tween(btn1player.position)
 		.to({
 			x: 400,
-			y: 330
+			y: 280
 		}, 2000, Phaser.Easing.Quadratic.Out, true);
 		btn1player.inputEnabled = true;
 		btn1player.events.onInputDown.add(() => {
@@ -43,13 +43,33 @@ class TitleController {
 		game.phaser.add.tween(btn2player.position)
 		.to({
 			x: 400,
-			y: 390
+			y: 340
 		}, 2000, Phaser.Easing.Quadratic.Out, true);
 		btn2player.inputEnabled = true;
 		btn2player.events.onInputDown.add(() => {
 			game.switchState(GAME_STATES.IN_GAME, {
 				players: 2,
 			});
+		});
+
+		const tutbutton = game.phaser.add.sprite(400, 1400, "tutbutton");
+		tutbutton.anchor.set(0.5, 0.5);
+		this.destroyables.push(tutbutton);
+		game.phaser.add.tween(tutbutton.position)
+		.to({
+			x: 400,
+			y: 400
+		}, 2000, Phaser.Easing.Quadratic.Out, true);
+		tutbutton.inputEnabled = true;
+		tutbutton.events.onInputDown.add(() => {
+			this.tutorial.position.y = 0;
+		});
+
+		this.tutorial = game.phaser.add.sprite(0, 0, "tutorial");
+		this.tutorial.inputEnabled = true;
+		this.tutorial.position.y = -600;
+		this.tutorial.events.onInputDown.add(() => {
+			this.tutorial.position.y = -600;
 		});
 
 		this.globalUI = new GlobalUI();

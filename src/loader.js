@@ -21,6 +21,8 @@ class Loader {
 		g.load.image("title", "assets/title.png");
 		g.load.image("1player", "assets/1player.png");
 		g.load.image("2player", "assets/2player.png");
+		g.load.image("tutbutton", "assets/tutorialbtn.png");
+		g.load.image("tutorial", "assets/tutorial.png");
 		g.load.spritesheet("blueendturn", "assets/blueendturn.png", 340, 56);
 		g.load.spritesheet("redendturn", "assets/redendturn.png", 340, 56);
 		g.load.audio("unbelievable", ["assets/audio/pucking-unbelievable.wav"]);
